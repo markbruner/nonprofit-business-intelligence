@@ -1,11 +1,6 @@
 # Instructions for Codex and other coding agents
 
-## Read order
-1. `docs/requirements/INDEX.md`
-2. `docs/delivery/MILESTONES.md`
-3. `docs/delivery/DECISIONS.md`
-4. **Only** the domain requirement files relevant to the currently approved milestone
-5. `docs/delivery/TEST-MATRIX.md` and the active task brief
+Start with reading `README.md`.
 
 Do not load the archived original specification unless a requirement conflicts or requires historical context. Each requirement has one owning file.
 
@@ -25,6 +20,7 @@ Do not load the archived original specification unless a requirement conflicts o
 ## Technical defaults
 - App: Next.js + TypeScript; data engineering: Python + SQL; Postgres/Supabase with versioned migrations.
 - Prefer deterministic, auditable financial rules over opaque scoring. Preserve source, tax period, and import provenance.
+- Utilize python scripts for repeatable processes and calculations.
 - Separate organization identities, relationship statuses, financial screening, and individual sales opportunities.
 - No speculative abstractions, premature microservices, or duplicated domain logic. Prefer pure functions for math, validated inputs, and tested idempotent ETL.
 - No realistic-looking fabricated nonprofit facts in production or demos; synthetic fixtures clearly labeled.
