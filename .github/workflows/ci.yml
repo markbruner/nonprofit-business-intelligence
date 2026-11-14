@@ -1,0 +1,42 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  python-checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - run: python -m compileall -q src tests
+      - run: python -m unittest discover -s tests -v
+  node-checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - run: npm test
+      # Build checks become required once package-lock.json is committed.
+      - name: Verify app when dependencies are locked
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+            npm run typecheck
+            npm run build
+          else
+            echo 'Build not validated: commit package-lock.json after npm install.'
+          fi
