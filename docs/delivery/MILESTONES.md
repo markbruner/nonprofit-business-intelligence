@@ -18,7 +18,7 @@
 - Repeated import is idempotent; amended/duplicate/conflicting filings handled transparently.
 - Sample reconciles to source filing for amounts, tax periods, and identifiers.
 - Missing/zero/unsupported fields cannot fabricate margins or trend data.
-- Versioned screening rules have readable reasons; overrides are traceable.
+- Versioned screening rules have readable reasons. A local test using synthetic data verifies that an override records the actor, timestamp, rationale, and previous and new outcomes while preserving the original computed result (SCR-008).
 - Geographic list, data coverage, source-selection rules, and discrepancies documented.
 
 **Business gate:** Produce a manually inspectable shortlist of plausible nonprofits and comparison of effort/quality against hand research. Owner decides if UI is worth building.
@@ -28,7 +28,8 @@
 **Scope:** Auth/RLS, shell/sidebar, Overview with honest early data, Table/Map/Summary with common filters, profiles, manual evidence, shortlist. No CRM implementation unless separately approved after M02 gate.
 
 **Technical gate:**
-- Signed-out and wrong-role API/database access denied; MFA/admin policy assessed.
+- Signed-out and wrong-role API/database access is denied. A test verifies that a privileged action is denied to an administrator without verified MFA and succeeds for the same administrator with verified MFA (SEC-005). Assess whether to require manager MFA before shared launch.
+- Before enabling shared portal overrides, verify that authorized users can record an override, unauthorized users are denied at the server and database, and the original computed result remains auditable (SCR-008, SEC-003, SEC-004).
 - Filtered counts agree across table, map, summary, including unmappable records labeled.
 - Financial data show fiscal period/source; missing/unknown states clear.
 - Revenue, mission, geography, stability filters work with representative volume; responsive/keyboard checks pass.

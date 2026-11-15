@@ -1,0 +1,5 @@
+EIN,NAME,STREET,CITY,STATE,ZIP,NTEE_CD,SUBSECTION,STATUS,TAX_PERIOD,REVENUE_AMT
+990000001,Cedar Community Health,1 Fictional Plaza,Cincinnati,OH,45202,E32,03,01,202412,1320000
+990000002,Lakefront Learning Collaborative,2 Fictional Plaza,Cleveland,OH,44113,B90,03,01,202412,1800000
+990000003,Riverbend Arts Council,3 Fictional Plaza,Cincinnati,OH,45208,A20,03,01,202412,1700000
+990000004,Northside Housing Initiative,4 Fictional Plaza,Cleveland,OH,44106,L20,03,01,202412,0
