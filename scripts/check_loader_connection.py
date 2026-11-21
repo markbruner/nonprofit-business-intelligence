@@ -32,7 +32,6 @@ def connection_parameters(ca_cert, password):
         password=password,
         sslmode="verify-full",
         sslrootcert=str(certificate),
-        service="",
         passfile=os.devnull,
         sslcert="",
         sslkey="",
@@ -90,6 +89,7 @@ def probe(ca_cert, password, *, connector=None):
 
         connector = connect
     connection = connector(**parameters)
+    connection.read_only = True
     try:
         if (
             connection.pgconn.ssl_in_use is not True
