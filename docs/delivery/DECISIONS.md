@@ -38,6 +38,16 @@ Keep this file small and current. **Chosen design preferences are not blanket au
 
 ## Owner decisions after baseline
 
+### Local repeatable runner approval — 2026-11-21
+
+Mark's "Yep let's go" approves the proposed local runner, synthetic failure/retry
+tests and thirteen-record 2023 batch preparation. It does not approve credential
+use, LOGIN activation, owner settings or cloud upload. The implemented CLI prepares
+only; one-batch execution accepts an explicitly supplied restricted connection and
+reviewed plan hash. Actual package contains thirteen filings with no overlaps or
+EIN/period conflicts against the local thirty-three-record baseline; live state
+still needs rechecking. Full suite 75 tests. See PIPELINE-RUNNER-PREFLIGHT.md.
+
 ### 2023 sample coverage request and local result — 2026-11-21
 
 Mark requested commit/push of current work, then 2023 coverage. Checkpoint bbb9361

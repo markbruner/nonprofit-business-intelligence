@@ -198,6 +198,14 @@ or payloads. This is partial DAT-011 evidence, not complete failure logging.
 
 ## Post-import storage and next batch
 
+Current local follow-up: `scripts/run_irs_pipeline.py` prepares the thirteen verified
+2023 filings as one package and exposes a tested injected-connection API that calls
+the existing import function. It creates no connection or credential and does not
+seed scope/capacity. All 75 Python tests pass; new API tests use synthetic mocks.
+Before any live use: approve the named restricted connection/LOGIN setup and exact
+batch/owner scope/capacity settings, refresh storage evidence and verify live counts.
+No new upload has occurred. See ../docs/delivery/PIPELINE-RUNNER-PREFLIGHT.md.
+
 Post-second-trial read-back at 17:29:55 UTC confirms max_rows=30, unchanged remaining
 returned safeguards, counts 33/33/2/33 and LOGIN false. Current DB=11,622,067 bytes,
 ingestion relations=352,256, WAL=83,886,444. DB and relation interval growth each

@@ -37,6 +37,13 @@
 
 ## Stop/go gates and outstanding choices
 
+2026-11-21 runner checkpoint: one local command prepares tax-2023 reviewed batches
+of at most thirty records with payload bounds; explicit injected execution API
+reuses server capacity/scope gates and never retries automatically. 75 tests pass;
+thirteen-record package prepared, no cloud contact. Partial DAT-003/005/006/007/008/
+011/012/013 and ARC-005 evidence. Credentials/live transport/owner settings and upload
+remain unapproved; see ../delivery/PIPELINE-RUNNER-PREFLIGHT.md.
+
 2026-11-21 tax-2023 checkpoint: 13 actual examples found in the existing local
 archive across all three states (OH 4 / KY 2 / IN 7), 91 direct-field checks and
 offline contract pass, 67 Python tests pass. Partial DAT-003/007/008/013 evidence;

@@ -51,6 +51,9 @@ Manual SQL migration history must be reconciled before future CLI database pushe
 Subsequent local coverage check verifies thirteen tax-2023 examples across OH/KY/IN
 in the existing archive; see `docs/requirements/IRS_SOURCE_CONTRACT.md`. This is
 sample evidence, not complete history or approval for another upload.
+Local repeatable preparation is available through `python -m scripts.run_irs_pipeline`;
+see `scripts/README.md`. The thirteen-record 2023 package is prepared, not uploaded.
+The injected loader API has synthetic tests; live credentials/transport remain gated.
 
 - Domain requirements in `docs/requirements/` are authoritative; the original spec under `reference/` is **historical context**, not a competing source of truth.
 - Changes to product scope must update the owning requirements file, then this index and any affected tests/milestones. Use a short ADR for meaningful architectural changes.

@@ -2,6 +2,28 @@
 
 Place repeatable local development and data-maintenance scripts here. Document inputs, side effects, and safety.
 
+## Repeatable 2023 pipeline preparation
+
+```powershell
+./.venv/Scripts/python.exe -m scripts.run_irs_pipeline data/irs-source-sample-20261121-01 data/irs-xml-sample-20261121-01 data/NEW-pipeline-package
+```
+
+One local command reuses source/coverage validators, preserves discovery evidence,
+selects actual tax-2023 records, and writes reviewed batches under the current
+30-record / 64 KiB limits. It never downloads or connects. Stable sorted payloads
+preserve database idempotency; each plan also binds its particular evidence files.
+The plan is written last; inspect partial outputs before trying a new directory.
+Real records/packages stay Git-ignored. Preparation failure prints only error type.
+
+`execute_prepared(connection, package, batch_id, expected_plan_sha256=...)` is a
+Python API for a future approved caller, not a live CLI command. Pass an explicitly
+reviewed plan digest and idle non-autocommit restricted connection. It checks all
+artifact hashes before calling existing `load_batch`; the DB checks scope/policy/
+fresh capacity. One selected batch per call, no automatic retry. A connection loss
+may leave a committed run; inspect server state before any explicit resubmission.
+No driver/credential setup or LOGIN activation is implemented by this runner.
+See `../docs/delivery/PIPELINE-RUNNER-PREFLIGHT.md` for limits and recovery.
+
 ## Check tax-2023 sample coverage locally
 
 ```powershell

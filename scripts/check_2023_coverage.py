@@ -163,7 +163,7 @@ def inspect_batch(manifest, selected):
     return batch, report
 
 
-def check(source, sample, output):
+def build_check(source, sample):
     verified = select_candidates(source)  # Existing source hash/state checks.
     states = {}
     for state in ("oh", "ky", "in"):
@@ -176,11 +176,16 @@ def check(source, sample, output):
         selected = candidate_rows(csv.DictReader(stream, strict=True), states)
     (manifest,) = (sample / "manifests").glob("*.json")
     batch, report = inspect_batch(manifest, selected)
+    return verified["source_manifest_sha256"], selected, batch, report
+
+
+def check(source, sample, output):
+    source_hash, selected, batch, report = build_check(source, sample)
     output.mkdir(exist_ok=False)
     _publish_new(
         output / "selection.json",
         {
-            "source_manifest_sha256": verified["source_manifest_sha256"],
+            "source_manifest_sha256": source_hash,
             "candidates": selected,
         },
     )

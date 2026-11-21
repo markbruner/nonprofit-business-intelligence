@@ -22,6 +22,21 @@ This is a **test plan**, not a claim that tests have been written or passed. Add
 
 ## Report actual execution per task
 
+### 2026-11-21 — repeatable preparation and injected loader runner
+
+- Full Python suite 75 passed. Eight new synthetic tests cover stable thirty/one
+  partitioning, payload splits/oversized singleton, parent quality/year rejection,
+  identical explicit resubmission payloads, changed plan/staging/source evidence,
+  rollback on server rejection, uncertain commit without retry, autocommit/path
+  rejection. No live driver or credentials were used.
+- Refactored coverage check into reusable build_check; existing coverage tests pass.
+  Actual CLI produced one thirteen-filing tax-2023 package, full original discovery
+  evidence and hashed review plan. Local comparison to prior batches finds thirteen
+  new EINs, no filing-key/period overlaps. Source comparisons remain 91/91 passing.
+- Existing SQL function remains storage/scope authority; no migration/policy/grant
+  change. Hosted execution of the new Python API is unverified/unapproved. Partial
+  DAT-003/005/006/007/008/011/012/013 and ARC-005 evidence only.
+
 ### 2026-11-21 — tax-2023 sample coverage
 
 - `python -m unittest discover -s tests`: PASS, 67 tests. Five new synthetic cases

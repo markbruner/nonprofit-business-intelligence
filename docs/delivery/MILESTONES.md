@@ -12,6 +12,12 @@
 
 ## M01 — Data foundation
 
+**Repeatable local runner — 2026-11-21:** Local selection/extraction/validation/
+bounded packaging implemented; 75 tests pass, including injected execution failure
+and resubmission behavior. Thirteen 2023 records prepared as one reviewable package.
+No live connection/LOGIN/scope-capacity update/upload approved or performed. Driver
+authentication, full history and complete import audit remain open. No gate advance.
+
 **Tax-2023 samples — 2026-11-21:** Existing archive verifies 13 tax-2023 filings,
 OH 4 / KY 2 / IN 7, version 2023v6.0; 91 direct-field comparisons and offline loader
 validation pass. Full suite 67 tests. No new downloads or cloud actions. Sample
