@@ -26,7 +26,7 @@ docs/delivery/DECISIONS.md        Confirmed choices, assumptions, unresolved app
 docs/delivery/CODEX-WORKFLOW.md   Efficient agent work patterns and prompts
 docs/delivery/TEST-MATRIX.md      Requirement-to-test traceability
 docs/tasks/M01-data-foundation.md First bounded task brief
-supabase/README.md                Unapplied loader/schema drafts and design-review hold
+supabase/README.md                Cloud checkpoint, approvals, diagnostics and trial limits
 docs/reference/original-product-spec-v1.md  Archived interview synthesis
 ```
 
@@ -39,6 +39,13 @@ docs/reference/original-product-spec-v1.md  Archived interview synthesis
 ```
 
 ## Change discipline
+
+Current M01 checkpoint (2026-11-21): the owner applied and verified the development
+schema, disabled loader identity and initial storage policy. Mark then approved and
+ran the first three-record trial; returned counts match 3 organizations, 3 filings,
+1 run and 3 provenance links, with LOGIN false. Further imports and LOGIN activation
+are not approved; see `docs/delivery/CLOUD-TRIAL-PREFLIGHT.md` and `supabase/README.md`.
+Manual SQL migration history must be reconciled before future CLI database pushes.
 
 - Domain requirements in `docs/requirements/` are authoritative; the original spec under `reference/` is **historical context**, not a competing source of truth.
 - Changes to product scope must update the owning requirements file, then this index and any affected tests/milestones. Use a short ADR for meaningful architectural changes.

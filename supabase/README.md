@@ -2,9 +2,9 @@
 
 The initial schema migration was applied manually by Mark to the dedicated cloud
 development project and its reported metadata checks passed. The disabled-loader
-identity setup was also applied by Mark and its metadata checks passed. Storage
-policy and rollback scripts remain unapplied drafts; login activation and data imports
-are not yet authorized. CLI configuration/migration history is not initialized here.
+identity and initial storage policy were applied by Mark and their metadata checks
+passed. Rollback scripts remain unapplied; login activation and data imports are
+not authorized. CLI configuration/migration history is not initialized here.
 M01: DAT-002/003/005/007/008/011/012/013 and SEC-003/006, partial only.
 
 ## Design review and execution status — 2026-11-21
@@ -91,7 +91,7 @@ policy-update privileges. No connection has been attempted.
 ## Capacity gate (no default operational values)
 
 `setup/storage_policy.sql` is the owner-approved initial three-filing policy,
-pending manual execution/read-back:
+applied manually with matching owner-returned read-back:
 1.5 billion byte projected-disk stop, 256 MiB reserve, 15-minute measurement age,
 3-row / 64 KiB batch limits, growth max(4x payload, 64 KiB/row), tax years 2023–2025.
 It inserts policy only and refuses to overwrite an existing row. It requires a
@@ -196,7 +196,40 @@ not persisted inside the rolled-back transaction: an approved future runner must
 capture sanitized failure type/timing separately. Do not log exception text, DSNs
 or payloads. This is partial DAT-011 evidence, not complete failure logging.
 
-## Recovery
+## First data trial — owner-run completion
+
+Mark approved and manually ran `first-cloud-trial-20261121-1715.sql` with System
+evidence 167.53 MB at 17:15 UTC on 2026-11-21. Returned complete: 3 organizations,
+3 filings, 1 import run, 3 provenance links, LOGIN false; database size 11,548,339
+bytes. No agent connection or authenticated Python transport was used. The
+following preparation notes describe the earlier review template. Do not rerun
+either first-trial artifact now that the target contains data. Further uploads
+require a separately reviewed batch and current capacity evidence.
+
+`scripts/prepare_cloud_trial.py` re-extracts the three local sample filings from
+their checksummed archive and compares them with staging, validates the index
+selection and creates a NEW Git-ignored SQL review artifact. It never connects
+to Supabase, reads credentials or enables LOGIN.
+
+The current `data/irs-xml-sample-20261121-01/first-cloud-trial-REVIEW.sql` has NULL
+System inputs and deliberately raises before writes. Do not paste/run this review
+template in Supabase. It contains three public financial observations; SQL Editor
+may retain query text, so actual execution requires explicit data-upload approval.
+
+The execution design adds only those three EINs, measures DB/WAL live as owner,
+retains the System observation's original timestamp, temporarily assumes the
+disabled loader role, calls the guarded import twice, restores SET/INHERIT false
+and verifies counts, all in one transaction. It checks an empty target and the
+approved policy exactly. No password or network driver is needed for this trial.
+It tests the SQL path, not an authenticated Python pipeline.
+
+Local PostgreSQL 17.12 tests with a real non-superuser owner session passed the
+success, duplicate-repeat, missing/stale/over-budget and whole-script replay cases.
+Expected success: 3 organizations, 3 filings, 1 run, 3 provenance links; login false.
+Fresh evidence and approval were supplied for the completed trial only. See
+`../docs/delivery/CLOUD-TRIAL-PREFLIGHT.md`. Do not reuse expired capacity evidence.
+
+## Recovery and migration history
 
 The cloud schema was applied through SQL Editor, not CLI migration tracking. Before
 introducing `supabase db push`, review and reconcile migration history explicitly;

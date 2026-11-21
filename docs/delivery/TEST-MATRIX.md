@@ -22,6 +22,38 @@ This is a **test plan**, not a claim that tests have been written or passed. Add
 
 ## Report actual execution per task
 
+### 2026-11-21 — owner-run first cloud import
+
+- Explicit approval preceded manual SQL Editor execution of the generated trial.
+  Owner returned complete, organizations=3, filings=3, import_runs=1,
+  provenance_links=3, login_enabled=false, database_bytes_after=11,548,339.
+- Completion implies generated internal repeat/count/role-restoration assertions
+  passed. This is owner-supplied evidence, not an independent agent connection.
+- Partial DAT-005/011/012 and restricted SQL-path evidence only. Final database
+  size is not total disk usage or a measured before/after growth calibration.
+  Authenticated Python transport and representative scale remain unverified.
+
+### 2026-11-21 — three-record SQL trial preparation (no cloud execution)
+
+- Owner's policy read-back matches every approved value, approved_at 14:42:52 UTC;
+  this is a policy-only checkpoint, not capacity/scope/first-load authorization.
+- `prepare_cloud_trial.py` and five synthetic unit tests added. Full Python suite:
+  PASS, 54 tests. Black API formatting/check and whitespace check: PASS.
+- On isolated PostgreSQL 17.12, actual non-superuser nbi_trial_owner sessions ran
+  generated SQL. Missing/stale/over-budget cases failed as expected with scope,
+  capacity and run counts 0 and owner SET/INHERIT false after rollback.
+- First over-budget attempt found a test-fixture WAL grant in the wrong database;
+  corrected grant in the synthetic test DB and reran all guards successfully.
+- Success: 3 synthetic organizations / 3 filings / 1 run / 3 provenance links,
+  login false, internal repeat receipt identical, role restoration verified.
+  Whole-script replay stopped at nonempty-target guard with no extra rows/grants.
+- Real-data review artifact generated offline, after re-extracting/checking the
+  original local archive: 3 filings, 2,180-byte JSON payload, no capacity evidence
+  supplied, no database contacted. Output is ignored and deliberately non-executable
+  until fresh inputs. No actual record values were copied into code/tests/chat.
+- This does not verify hosted execution, live authentication or Python transport.
+  Test container removed after inspection; only synthetic ephemeral data discarded.
+
 ### 2026-11-21 — initial storage-policy proposal validation
 
 - Owner supplied DB=11,409,075 bytes and WAL=83,886,444 bytes at 14:31:47 UTC;

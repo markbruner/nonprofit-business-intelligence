@@ -4,6 +4,25 @@ Place repeatable local development and data-maintenance scripts here. Document i
 
 ## Offline loader draft (`load_supabase.py`)
 
+### First cloud trial review preparation
+
+`prepare_cloud_trial.py` generates local SQL only; it has no database/network or
+credential access. It checks the local archive against staging/selection and
+uses collision-safe dollar quoting. Real-data output is restricted to ignored
+repo `data/`, exclusively/atomically published, never overwritten.
+
+```powershell
+./.venv/Scripts/python.exe -B -m scripts.prepare_cloud_trial data/irs-xml-sample-20261121-01 data/irs-xml-sample-20261121-01/NEW-review.sql
+```
+
+Without `--system-timestamp-us` and `--system-mb`, output is a blocked review
+template. Those arguments accept the metric's actual Unix-microsecond timestamp
+and displayed MB value, using a conservative binary upper bound plus rounding.
+Supplying them does NOT grant execution approval. Refresh stale data, obtain
+named trial approval, then run the complete reviewed transaction manually.
+No LOGIN activation is needed; temporary owner SET permission is restored.
+The SQL Editor may retain its public IRS payload. Never add the output to Git.
+
 Validates bounded full-990 staging output without opening a database connection:
 
 ```powershell

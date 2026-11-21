@@ -5,9 +5,15 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
-from scripts.prepare_cloud_trial import dollar_quote, render_trial, system_evidence
+from scripts.prepare_cloud_trial import (
+    dollar_quote,
+    render_trial,
+    system_evidence,
+    write_new_sql,
+)
 
 
 def fixture():
@@ -62,7 +68,7 @@ class CloudTrialPreparationTests(unittest.TestCase):
         batch, selection = fixture()
         sql, summary = render_trial(batch, selection)
         self.assertFalse(summary["database_contacted"])
-        self.assertFalse(summary["fresh_system_evidence_supplied"])
+        self.assertFalse(summary["system_evidence_supplied"])
         self.assertIn("fresh_system_evidence_required_review_template_only", sql)
         self.assertIn("null::timestamptz", sql)
         self.assertIn("set local role nb_loader_dev", sql)
@@ -107,6 +113,15 @@ class CloudTrialPreparationTests(unittest.TestCase):
             system_bound=168 * 1024**2,
         )
         self.assertIn("$nbi_trial_$", sql)
+
+    def test_sql_publication_does_not_replace_existing_artifact(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "review.sql"
+            write_new_sql(path, "-- synthetic review only\n")
+            with self.assertRaises(FileExistsError):
+                write_new_sql(path, "-- must not replace\n")
+            self.assertEqual("-- synthetic review only\n", path.read_text())
+            self.assertFalse(list(Path(directory).glob("*.part")))
 
 
 def write_sql_fixtures(output: Path):

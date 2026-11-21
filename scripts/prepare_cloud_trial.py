@@ -5,8 +5,10 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_CEILING
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
+import tempfile
 
 from scripts.extract_990 import extract_batch
 from scripts.load_supabase import prepare_batch
@@ -196,10 +198,27 @@ select 'complete' as trial_status,
     return sql, {
         "status": "prepared_for_review",
         "filings": 3,
-        "fresh_system_evidence_supplied": observed is not None,
+        "system_evidence_supplied": observed is not None,
         "payload_bytes": len(raw.encode()),
         "database_contacted": False,
     }
+
+
+def write_new_sql(path: Path, sql: str) -> None:
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=path.parent, suffix=".part", delete=False
+        ) as stream:
+            temporary = Path(stream.name)
+            stream.write(sql)
+        if os.name == "nt":
+            temporary.rename(path)
+        else:
+            os.link(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 def main() -> int:
@@ -236,8 +255,7 @@ def main() -> int:
         sql, summary = render_trial(
             batch, selection, observed=observed, system_bound=bound
         )
-        with args.output.open("x", encoding="utf-8", newline="\n") as stream:
-            stream.write(sql)
+        write_new_sql(args.output, sql)
     except Exception as error:
         print(
             json.dumps(

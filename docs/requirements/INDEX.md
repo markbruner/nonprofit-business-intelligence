@@ -37,6 +37,16 @@
 
 ## Stop/go gates and outstanding choices
 
+2026-11-21 latest checkpoint: Mark approved and ran the first cloud transaction;
+returned complete with 3 organizations / 3 filings / 1 run / 3 provenance links
+and LOGIN false. Partial DAT-005/011/012 evidence. Earlier preparation blockers
+below are historical for this trial. Further loads and milestone gates remain open.
+
+2026-11-21: Cloud policy metadata matches approved values. First three-record
+transaction is prepared and tested offline (DAT-005/011/012 partial evidence),
+not executed in Supabase. Fresh System evidence and explicit first-data approval
+are still required. See `../delivery/CLOUD-TRIAL-PREFLIGHT.md`.
+
 2026-11-21: Owner-run cloud schema metadata verification matches expected counts,
 RLS, role flags and grants. This is a schema-only checkpoint; cloud imports,
 capacity calibration and live loader authentication remain unverified/unapproved.

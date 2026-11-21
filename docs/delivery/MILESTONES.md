@@ -12,6 +12,19 @@
 
 ## M01 — Data foundation
 
+**First cloud import — 2026-11-21:** Mark approved and manually ran the generated
+three-filing trial. Returned completion: 3 organizations / 3 filings / 1 run /
+3 provenance links; LOGIN false, database size 11,548,339 bytes. This supersedes
+the preparation blockers below for this transaction only. Further batches,
+authenticated Python transport and milestone release remain unapproved.
+
+**First-data trial preparation — 2026-11-21:** Owner's initial cloud policy
+read-back passed. A locally generated three-record SQL review transaction passed
+synthetic PostgreSQL 17.12 tests for guarded import, duplicate-free repeat,
+failure rollback and temporary role restoration. All 54 Python tests pass. Review
+artifact has unset capacity evidence and must not run in Supabase. Fresh evidence
+and explicit first-data approval remain pending; no actual cloud import verified.
+
 **Loader permission/storage checkpoint — 2026-11-21:** Owner-returned disabled
 loader metadata matches the reviewed permissions; no login is enabled. A local
 synthetic storage benchmark passed (3,000 filings / 1,000 organizations, ~4.5 MB

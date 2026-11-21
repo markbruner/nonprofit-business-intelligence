@@ -38,6 +38,18 @@ Keep this file small and current. **Chosen design preferences are not blanket au
 
 ## Owner decisions after baseline
 
+### First three-filing cloud trial — 2026-11-21
+
+Mark explicitly approved the generated `first-cloud-trial-20261121-1715.sql`
+transaction in the dedicated development project, including its three public IRS
+filings and SQL Editor destination. System evidence was 167.53 MB at 17:15 UTC.
+Mark ran it manually and returned complete: 3 organizations, 3 filings, 1 import
+run, 3 provenance links, LOGIN false; database_bytes_after=11,548,339.
+This is owner-reported hosted SQL-path evidence, including the transaction's
+internal duplicate and role-restoration assertions; no agent cloud access occurred.
+It does not authorize further imports, policy widening, login activation or the
+next milestone. Do not rerun the first-trial script against the populated target.
+
 ### D-16 — Disk-budget constraint — 2026-11-21
 
 Mark requested that future development explicitly avoid exceeding this project's
@@ -112,9 +124,10 @@ reserve, below the proposed stop and provisioned floor. This is not a provider
 quota or guarantee against other writers/WAL growth.
 
 After clarification that the three-filing limit is per trial batch, Mark explicitly
-approved `../../supabase/setup/storage_policy.sql`. Owner execution/read-back is
-PENDING. Approval covers policy only; no capacity snapshot, EIN allowlist,
-credentials, LOGIN activation or records. Mark will run the SQL manually.
+approved `../../supabase/setup/storage_policy.sql`. Mark then returned its read-back
+with every expected value, approved_at 2026-11-21 14:42:52 UTC: policy metadata
+checkpoint PASSED. Approval covers policy only; no capacity snapshot, EIN allowlist,
+credentials, LOGIN activation or records. Do not rerun the initial INSERT script.
 Next capacity seed must retain the oldest component measurement timestamp and
 document the unit bounds; currently supplied values can expire before first load.
 
