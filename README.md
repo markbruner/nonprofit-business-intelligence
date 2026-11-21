@@ -48,6 +48,9 @@ Post-batch read-back confirms max_rows=30, unchanged storage safeguards and LOGI
 Further imports and LOGIN activation
 are not approved; see `docs/delivery/CLOUD-TRIAL-PREFLIGHT.md` and `supabase/README.md`.
 Manual SQL migration history must be reconciled before future CLI database pushes.
+Subsequent local coverage check verifies thirteen tax-2023 examples across OH/KY/IN
+in the existing archive; see `docs/requirements/IRS_SOURCE_CONTRACT.md`. This is
+sample evidence, not complete history or approval for another upload.
 
 - Domain requirements in `docs/requirements/` are authoritative; the original spec under `reference/` is **historical context**, not a competing source of truth.
 - Changes to product scope must update the owning requirements file, then this index and any affected tests/milestones. Use a short ADR for meaningful architectural changes.

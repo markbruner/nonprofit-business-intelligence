@@ -38,6 +38,16 @@ Keep this file small and current. **Chosen design preferences are not blanket au
 
 ## Owner decisions after baseline
 
+### 2023 sample coverage request and local result — 2026-11-21
+
+Mark requested commit/push of current work, then 2023 coverage. Checkpoint bbb9361
+pushed with 62 tests passing. Local-only follow-up confirmed 13 actual tax-2023
+filings in the already approved January archive: OH 4 / KY 2 / IN 7, all 2023v6.0.
+91 direct field checks, index reconciliation and offline loader validation pass;
+one amended record retained explicitly. Full suite now 67 tests. No new collection,
+cloud access/upload or policy change. This resolves sample availability/core mapping
+only; statewide completeness, reporting selection and milestone gates remain open.
+
 ### Owner-reported second cloud trial completion — 2026-11-21
 
 Follow-up read-back at 17:29:55 UTC confirms counts 33/33/2/33, LOGIN false and

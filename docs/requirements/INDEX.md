@@ -37,6 +37,12 @@
 
 ## Stop/go gates and outstanding choices
 
+2026-11-21 tax-2023 checkpoint: 13 actual examples found in the existing local
+archive across all three states (OH 4 / KY 2 / IN 7), 91 direct-field checks and
+offline contract pass, 67 Python tests pass. Partial DAT-003/007/008/013 evidence;
+sample absence is resolved, complete history remains unverified. See
+IRS_SOURCE_CONTRACT.md and ../delivery/TAX2023-COVERAGE-PREFLIGHT.md. No cloud action.
+
 2026-11-21 latest storage checkpoint: owner read-back verifies second-trial counts,
 max_rows=30, remaining safeguards and LOGIN false. DB/relation growth each 73,728
 bytes; WAL allocation unchanged. Partial DAT-005/011/012 evidence, not bulk-scale

@@ -2,6 +2,22 @@
 
 Place repeatable local development and data-maintenance scripts here. Document inputs, side effects, and safety.
 
+## Check tax-2023 sample coverage locally
+
+```powershell
+./.venv/Scripts/python.exe -m scripts.check_2023_coverage data/irs-source-sample-20261121-01 data/irs-xml-sample-20261121-01 data/NEW-tax2023-check
+```
+
+No downloads or DB connection. Reuses checksummed sources and selects at most 500
+regional candidates in the existing January archive with period ends in 2023/2024.
+Coverage uses actual XML TaxYr, never publication/end year. Seven direct-path
+checks per tax-2023 record supplement index reconciliation. Writes only a new ignored
+selection/staging/aggregate-report directory; preserves findings and missing data.
+Exit 0 means samples in all three states passed, 2 means review required, 1 means
+failure. No upload is authorized or historical completeness claimed. Partial output
+must be reviewed before retrying in a new directory. Roll back only task-owned
+code/output if requested; source snapshots and cloud data are untouched.
+
 ## Prepare the next local batch
 
 `prepare_next_cloud_trial.py` revalidates the same sources and creates populated-

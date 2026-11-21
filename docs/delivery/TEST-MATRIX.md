@@ -22,6 +22,19 @@ This is a **test plan**, not a claim that tests have been written or passed. Add
 
 ## Report actual execution per task
 
+### 2026-11-21 — tax-2023 sample coverage
+
+- `python -m unittest discover -s tests`: PASS, 67 tests. Five new synthetic cases
+  cover fiscal periods, actual tax-year gating, missing state samples, index mismatch,
+  invalid/conflicting candidates, checksum tampering and null/zero/amendment handling.
+- Existing approved local archive: 52 index-selected candidates, 39 tax-2024 and
+  13 actual tax-2023; OH 4 / KY 2 / IN 7, all returnVersion 2023v6.0. No parser or
+  index findings. 91 direct-field checks pass, no missing core fields. One amended X;
+  twelve absent indicators remain null. Seven target period ends fall in 2024.
+- Explicit 2023 view passes offline loader validation; 8,842-byte compact payload.
+  No downloads, DB contact or upload; actual records stay ignored. Partial
+  DAT-003/007/008/013 evidence, not historical completeness/full XSD validation.
+
 ### 2026-11-21 — second trial post-import policy/storage read-back
 
 - Owner-supplied diagnostic at 17:29:55 UTC confirms 33/33/2/33, LOGIN false,

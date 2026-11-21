@@ -12,6 +12,12 @@
 
 ## M01 — Data foundation
 
+**Tax-2023 samples — 2026-11-21:** Existing archive verifies 13 tax-2023 filings,
+OH 4 / KY 2 / IN 7, version 2023v6.0; 91 direct-field comparisons and offline loader
+validation pass. Full suite 67 tests. No new downloads or cloud actions. Sample
+availability/core mapping verified; statewide history, current-filing selection,
+authenticated repeatable loading and both milestone gates remain open.
+
 **Post-second-trial read-back — 2026-11-21:** Counts 33/33/2/33, LOGIN false and
 max_rows=30 verified from owner output; other returned safeguards unchanged. DB and
 ingestion relation interval growth each 73,728 bytes; allocated WAL unchanged.

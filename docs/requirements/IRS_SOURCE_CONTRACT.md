@@ -17,6 +17,28 @@ data extract is needed to verify an XML mapping.
 
 ## Full-990 XML verification — 2026-11-21
 
+### Actual tax-2023 local sample — subsequent checkpoint
+
+The existing approved January 2026 archive contains actual 2023 filings; no new
+download was required. The reproducible `scripts/check_2023_coverage.py` checks
+snapshot/ZIP provenance, selects 52 regional index candidates with period-end
+years 2023/2024, and gates actual coverage on XML TaxYr. All 52 staged without
+parser findings: 39 tax-2024 and 13 tax-2023. Tax-2023 examples: OH 4 / KY 2 / IN 7,
+all returnVersion 2023v6.0. Six period ends are in 2023 and seven in 2024.
+
+Seven fields per target record matched direct XML paths (91 comparisons): EIN,
+TaxYr, period end, form, total revenue, total expenses and amendment indicator.
+No index identity/period mismatches or missing core fields; one amended X and
+twelve absent indicators retained as true/null. The explicit 13-record tax-2023
+view passes offline loader validation (8,842 compact payload bytes). No upload,
+SQL execution artifact or cloud access. Report and staging remain ignored under
+data/irs-tax2023-check-20261121-03/.
+
+This adds limited 2023v6.0 core-mapping and actual-availability evidence, not full
+XSD validation, all-version/form coverage, statewide completeness or a current
+filing selection rule. Earlier statements that no 2023 sample was verified are
+historical. See ../delivery/TAX2023-COVERAGE-PREFLIGHT.md for scope and tests.
+
 Selected scope: XML tax years 2023–2025 (DAT-003), organizations from OH/KY/IN
 source snapshots (DAT-013). This is partial verification, not live-import approval.
 
