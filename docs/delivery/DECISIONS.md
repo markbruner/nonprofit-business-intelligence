@@ -26,7 +26,7 @@ Keep this file small and current. **Chosen design preferences are not blanket au
 
 | ID | Decision needed | Blocks | Low-risk work before answer |
 |---|---|---|---|
-| O-01 | Metro definition/year and exact Cincinnati/Cleveland **county lists**, mailing vs service geography | Real geographic extract | Synthetic fixture and configurable geography model |
+| O-01 | Metro definition/year and exact Cincinnati/Cleveland **county lists**, mailing vs service geography | County-level prospect targeting; three-state candidate registry is approved separately in D-17 | Synthetic fixture and configurable geography model |
 | O-02 | IRS return types, years, preferred extraction datasets, field mapping, validation examples, source terms | Real ingestion | Build parser contracts and tests with synthetic/source-safe sample |
 | O-03 | Calibrated screening thresholds and tolerance for false qualified prospects | Final rule release | Parameterized rules & edge-case tests |
 | O-04 | Public/professional contact sourcing, acceptable outreach practices, retention/deletion period | Live CRM content | Build synthetic CRM tests |
@@ -57,7 +57,48 @@ project provisioning, credential use, live downloads/uploads, automatic disk gro
 additional spending, or deployment. No loader controls have been implemented or
 verified. O-08 remains open.
 
+### D-17 — Candidate registry scope and bounded loader approval — 2026-11-21
+
+Mark selected Ohio, Kentucky, and Indiana for the initial nonprofit candidate
+registry/EIN allowlist (DAT-013). This expands ingestion candidates beyond the
+metro prospecting scope; it does not redefine service geography. County choices
+remain open for prospect targeting. IRS state-address coverage and missing/other
+return types must remain explicit; full-990 XML cannot establish a complete
+three-state nonprofit registry by itself.
+
+Mark confirmed an empty, dedicated Supabase development project and explicitly
+approved local schema/loader preparation with storage checks and synthetic tests.
+No credentials, project URL, or keys are needed in these source files. This slice
+does not approve connection/credential use, migration execution against Supabase,
+live collection, uploads, spending, or deployment. O-02/O-08 and the measured
+DAT-012 operating thresholds remain open. See `SUPABASE-LOADER-PREFLIGHT.md`.
+
+Mark subsequently started Docker and authorized continuation of the local tests.
+An isolated synthetic PostgreSQL test database was used; no live/cloud operation
+or real source collection was approved by this step.
+
+### Initial filing years — 2026-11-21
+
+Mark selected tax years 2023 through 2025 inclusive for the first full-990 import
+(DAT-003). These are XML tax years, not archive publication years or years inferred
+from period end. O-02 is partially resolved; mapping, source terms, actual coverage
+and collection limits remain open. Selection does not approve live collection or
+cloud execution. The storage screenshot showed approximately 0.25 GB used on a
+2 GB provisioned disk, with an 8 GB included allowance and spend cap shown enabled.
+These rounded readings are planning context, not fresh operational measurements
+or approved capacity thresholds.
+
 ## Proposed, not yet locked
+
+### Bounded public CSV sample approval and execution — 2026-11-21
+
+After reviewing the exact four-file/175 MB plan, Mark asked to reuse the existing
+downloaders and explicitly instructed "Sounds good, proceed." This approved one
+local OH/KY/IN EO snapshot plus the 2026 publication index, with hard payload caps,
+no retries/redirects, no XML archives and no Supabase access. The safety review is
+`SOURCE-SAMPLE-PREFLIGHT.md`. The run completed within bounds (89,863,197 bytes),
+with aggregate findings in `../requirements/IRS_SOURCE_CONTRACT.md`. No further
+collection, cloud operation or milestone gate was approved.
 
 ### Bounded implementation approval — 2026-11-15
 

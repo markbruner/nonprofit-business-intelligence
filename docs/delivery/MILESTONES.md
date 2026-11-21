@@ -12,6 +12,24 @@
 
 ## M01 — Data foundation
 
+**Bounded source update — 2026-11-21:** Mark approved one fixed four-CSV local
+sample. Existing downloader gained tested payload caps and one-attempt support;
+the run completed at 89,863,197 bytes with source manifests and aggregate checks.
+All 43 Python tests pass. Actual EO/index headers are now observed, but tax-year
+coverage, XML sample reconciliation, scope persistence and operational storage
+calibration remain open. No XML collection, cloud execution or M01 gate approval.
+
+**Bounded task update — 2026-11-21:** Mark approved local schema/loader preparation
+with storage checks and synthetic tests, then requested database-design review and
+star-schema alignment before table creation. Draft SQL remains unapplied and on
+execution hold (see `../../supabase/README.md`). Schema review added internal IDs
+and removed duplicate financial JSON storage. All 34 Python and 8 API tests pass;
+isolated PostgreSQL 16 SQL gate/recovery tests and empty-schema rollback/reapply
+passed. Full Supabase platform behavior, concurrency and real capacity calibration
+remain unverified. OH/KY/IN candidate scope is recorded in
+DAT-013. No credential use, live collection/upload, deployment or gate advancement
+has been approved.
+
 **Bounded task update — 2026-11-15:** Mark approved the local IRS downloader
 refactor and synthetic tests only. Implemented URL selection, sequential batch
 downloads, safe temporary-file publication, bounded retries, and returned

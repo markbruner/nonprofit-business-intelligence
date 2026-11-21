@@ -12,11 +12,14 @@ from zipfile import ZipFile
 import requests
 
 from scripts.download_irs import (
+    DownloadBudget,
     build_eo_url,
     download_eo_files,
     download_file,
     download_series_990_index,
     download_series_990_xml,
+    download_source_sample,
+    EO_REQUIRED_COLUMNS,
 )
 
 BODY = b"EIN,NAME\n001234567,SYNTHETIC TEST ORGANIZATION\n"
@@ -26,10 +29,195 @@ def response(status=200, chunks=None):
     result = MagicMock()
     result.__enter__.return_value = result
     result.status_code = status
+    result.headers = {}
     if status >= 400:
         result.raise_for_status.side_effect = requests.HTTPError(response=result)
     result.iter_content.return_value = iter([BODY] if chunks is None else chunks)
     return result
+
+
+def bounded_response(body, headers=None, status=200):
+    result = response(status=status)
+    result.headers = headers or {}
+    stream = BytesIO(body)
+    result.raw.read.side_effect = lambda amount, decode_content=False: stream.read(
+        amount
+    )
+    return result
+
+
+class BoundedDownloadTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.http = patch("scripts.download_irs.requests.get").start()
+        self.addCleanup(patch.stopall)
+
+    def test_exact_declared_limit_and_identity_request(self):
+        self.http.return_value = bounded_response(b"12345", {"Content-Length": "5"})
+        budget = DownloadBudget(5)
+        result = download_file(
+            "https://example.invalid/synthetic",
+            self.root / "file",
+            max_bytes=5,
+            max_attempts=1,
+            budget=budget,
+        )
+        self.assertEqual(5, result.byte_count)
+        self.assertEqual(5, budget.consumed)
+        self.assertFalse(self.http.call_args.kwargs["allow_redirects"])
+        self.assertEqual(
+            {"Accept-Encoding": "identity"}, self.http.call_args.kwargs["headers"]
+        )
+
+    def test_unknown_length_stops_at_cap_without_overread_or_replacement(self):
+        path = self.root / "file"
+        path.write_bytes(b"previous")
+        reply = bounded_response(b"123456789")
+        self.http.return_value = reply
+        budget = DownloadBudget(5)
+        with self.assertRaisesRegex(ValueError, "budget exhausted"):
+            download_file(
+                "https://example.invalid/synthetic",
+                path,
+                max_bytes=5,
+                max_attempts=1,
+                budget=budget,
+            )
+        self.assertEqual(5, budget.consumed)
+        reply.raw.read.assert_called_once_with(5, decode_content=False)
+        self.assertEqual(b"previous", path.read_bytes())
+        self.assertFalse(list(self.root.glob("*.part")))
+
+    def test_shared_budget_includes_failed_file_bytes(self):
+        self.http.side_effect = [
+            bounded_response(b"12345", {"Content-Length": "5"}),
+            bounded_response(b"123456"),
+        ]
+        budget = DownloadBudget(8)
+        download_file(
+            "https://example.invalid/one",
+            self.root / "one",
+            max_bytes=10,
+            max_attempts=1,
+            budget=budget,
+        )
+        with self.assertRaises(ValueError):
+            download_file(
+                "https://example.invalid/two",
+                self.root / "two",
+                max_bytes=10,
+                max_attempts=1,
+                budget=budget,
+            )
+        self.assertEqual(8, budget.consumed)
+        self.assertFalse((self.root / "two").exists())
+        self.assertEqual(b"12345", (self.root / "one").read_bytes())
+
+    def test_redirect_compression_and_oversize_headers_rejected_before_read(self):
+        for status, headers in (
+            (302, {}),
+            (200, {"Content-Encoding": "gzip"}),
+            (200, {"Content-Length": "50"}),
+            (200, {"Content-Length": "invalid"}),
+        ):
+            with self.subTest(status=status, headers=headers):
+                reply = bounded_response(b"123", headers, status)
+                self.http.return_value = reply
+                with self.assertRaises(ValueError):
+                    download_file(
+                        "https://example.invalid/synthetic",
+                        self.root / "file",
+                        max_bytes=10,
+                        max_attempts=1,
+                    )
+                reply.raw.read.assert_not_called()
+        self.assertFalse((self.root / "file").exists())
+
+    def test_one_attempt_and_invalid_options_never_retry(self):
+        self.http.return_value = bounded_response(b"", status=503)
+        with self.assertRaises(requests.HTTPError):
+            download_file(
+                "https://example.invalid/synthetic",
+                self.root / "file",
+                max_bytes=10,
+                max_attempts=1,
+            )
+        self.http.assert_called_once()
+        self.http.reset_mock()
+        for kwargs in (
+            {"max_bytes": 0},
+            {"max_attempts": 0},
+            {"budget": DownloadBudget(10)},
+        ):
+            with self.assertRaises(ValueError):
+                download_file(
+                    "https://example.invalid/synthetic", self.root / "file", **kwargs
+                )
+        self.http.assert_not_called()
+
+    def test_short_body_and_validation_failure_preserve_prior_file(self):
+        path = self.root / "file"
+        path.write_bytes(b"previous")
+        self.http.return_value = bounded_response(b"12", {"Content-Length": "5"})
+        with self.assertRaisesRegex(ValueError, "declared length"):
+            download_file(
+                "https://example.invalid/synthetic", path, max_bytes=10, max_attempts=1
+            )
+        self.http.return_value = bounded_response(b"12")
+        with self.assertRaises(ValueError):
+            download_file(
+                "https://example.invalid/synthetic",
+                path,
+                max_bytes=10,
+                max_attempts=1,
+                validate=MagicMock(side_effect=ValueError("synthetic header")),
+            )
+        self.assertEqual(b"previous", path.read_bytes())
+
+    def test_fixed_source_sample_aggregate_report_and_no_overwrite(self):
+        headers = sorted(EO_REQUIRED_COLUMNS)
+        bodies = []
+        for state in ("OH", "KY", "IN"):
+            row = dict.fromkeys(headers, "")
+            row.update(EIN="001234567", STATE=state, NAME="SYNTHETIC TEST ONLY")
+            bodies.append(
+                (
+                    ",".join(headers) + "\n" + ",".join(row[h] for h in headers) + "\n"
+                ).encode()
+            )
+        bodies.append(
+            b"EIN,TAX_PERIOD,OBJECT_ID,RETURN_TYPE\n001234567,202512,synthetic,990\n"
+        )
+        self.http.side_effect = [bounded_response(body) for body in bodies]
+        snapshot = self.root / "new"
+        report = download_source_sample(snapshot)
+        self.assertEqual("complete", report["status"])
+        self.assertEqual(sum(map(len, bodies)), report["payload_bytes_consumed"])
+        self.assertEqual(1, report["summary"]["candidate_eins"])
+        self.assertEqual(1, report["summary"]["matching_full_990_rows"])
+        self.assertFalse(report["summary"]["tax_year_coverage_verified"])
+        self.assertNotIn("SYNTHETIC TEST ONLY", json.dumps(report))
+        self.assertEqual(4, self.http.call_count)
+        with self.assertRaises(FileExistsError):
+            download_source_sample(snapshot)
+        self.assertEqual(4, self.http.call_count)
+
+    def test_invalid_header_stops_plan_and_records_partial_budget(self):
+        self.http.return_value = bounded_response(b"invalid header\n")
+        snapshot = self.root / "bad"
+        with self.assertRaisesRegex(ValueError, "EO CSV"):
+            download_source_sample(snapshot)
+        manifest = json.loads((snapshot / "source-sample.json").read_text())
+        self.assertEqual("failed", manifest["status"])
+        self.assertEqual(len(b"invalid header\n"), manifest["payload_bytes_consumed"])
+        self.assertEqual(
+            ["failed", "pending", "pending", "pending"],
+            [entry["status"] for entry in manifest["files"]],
+        )
+        self.assertFalse((snapshot / "eo_oh.csv").exists())
+        self.http.assert_called_once()
 
 
 class DownloadTests(unittest.TestCase):
@@ -39,9 +227,9 @@ class DownloadTests(unittest.TestCase):
         self.directory = Path(self.temporary.name)
         self.destination = self.directory / "eo_oh.csv"
         self.url = build_eo_url("ohio")
-        self.get = patch("scripts.data_extract.requests.get").start()
+        self.get = patch("scripts.download_irs.requests.get").start()
         self.addCleanup(patch.stopall)
-        self.sleep = patch("scripts.data_extract.time.sleep").start()
+        self.sleep = patch("scripts.download_irs.time.sleep").start()
 
     def assert_no_partial_files(self):
         self.assertEqual([], list(self.directory.glob(".*.part")))
@@ -167,7 +355,7 @@ class DownloadTests(unittest.TestCase):
     def test_publication_failure_preserves_existing_file_and_cleans_up(self):
         self.destination.write_bytes(b"previous")
         self.get.return_value = response()
-        with patch("scripts.data_extract.Path.replace", side_effect=PermissionError):
+        with patch("scripts.download_irs.Path.replace", side_effect=PermissionError):
             with self.assertRaises(PermissionError):
                 download_file(self.url, self.destination)
         self.get.assert_called_once()
@@ -192,7 +380,7 @@ class Form990Tests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.snapshot = Path(temporary.name) / "snapshot"
-        http = patch("scripts.data_extract.requests.get")
+        http = patch("scripts.download_irs.requests.get")
         self.get = http.start()
         self.addCleanup(http.stop)
 

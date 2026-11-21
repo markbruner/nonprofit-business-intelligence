@@ -9,7 +9,7 @@
 | File | Domain | IDs | Timing |
 |---|---|---|---|
 | [01-product-scope.md](01-product-scope.md) | Goals, scope, business rules | PRD-001–PRD-009 | M01–M04 |
-| [02-data-ingestion.md](02-data-ingestion.md) | Public sources, identity, ETL, provenance, disk budget | DAT-001–DAT-012 | M01 |
+| [02-data-ingestion.md](02-data-ingestion.md) | Public sources, identity, ETL, provenance, disk budget, state scope | DAT-001–DAT-013 | M01 |
 | [03-financial-screening.md](03-financial-screening.md) | Measures, rules, review, priority | SCR-001–SCR-010 | M01 |
 | [04-profiles-and-evidence.md](04-profiles-and-evidence.md) | Profiles, impact/funding evidence | RES-001–RES-009 | M02–M03 |
 | [05-crm-and-opportunities.md](05-crm-and-opportunities.md) | Relationships, contacts, tasks, pipeline | CRM-001–CRM-012 | M03 |
@@ -37,6 +37,20 @@
 
 ## Stop/go gates and outstanding choices
 
+2026-11-21: Approved bounded OH/KY/IN EO plus 2026-index sample completed locally;
+actual headers and aggregate scope counts are recorded in `IRS_SOURCE_CONTRACT.md`.
+This supplies partial DAT-001/006/007/011/013 evidence, not XML tax-year coverage.
+
+2026-11-21: Initial full-990 XML tax years are 2023–2025 inclusive (DAT-003).
+Archive publication year is not the filing tax year; availability and source
+mapping still require verification before collection. The SQL gate is tested
+locally for rejecting unknown and out-of-policy years.
+
+2026-11-21: DAT-013 / D-17 establish Ohio, Kentucky, and Indiana as the candidate
+registry/EIN allowlist scope. County targeting remains a separate decision.
+Local loader and migration drafts add partial M01 evidence only; database
+integration/security tests and measured storage calibration remain outstanding.
+
 2026-11-21: Mark established a disk-budget constraint for future Supabase ingestion
 (DAT-012; D-16 in the decision register). Capacity checks, stop thresholds, and
 regional filtering are required design work, not implemented controls. Numeric
@@ -53,4 +67,4 @@ add partial evidence for DAT-006, DAT-007, and DAT-011. See the test matrix.
 2026-11-17: Local Form 990 XML staging adds synthetic evidence for portions
 of DAT-003, DAT-005, DAT-007, DAT-008, and DAT-011. See the test matrix.
 
-See [MILESTONES](../delivery/MILESTONES.md), [DECISIONS](../delivery/DECISIONS.md), and [TEST-MATRIX](../delivery/TEST-MATRIX.md). Must resolve county boundaries and financial/source-field coverage before a real M01 geographic extraction; must approve access before partner provisioning and any production deployment.
+See [MILESTONES](../delivery/MILESTONES.md), [DECISIONS](../delivery/DECISIONS.md), and [TEST-MATRIX](../delivery/TEST-MATRIX.md). State scope is approved by DAT-013; source-field coverage and collection limits still require review before real ingestion. County boundaries remain open for finer targeting. Approve access before partner provisioning and any production deployment.

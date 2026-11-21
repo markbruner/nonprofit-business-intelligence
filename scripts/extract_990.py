@@ -13,7 +13,7 @@ from xml.etree import ElementTree as ET
 from zipfile import BadZipFile, ZipFile
 from zlib import error as ZlibError
 
-PARSER_VERSION = "form990-xml-provisional-v1"
+PARSER_VERSION = "form990-xml-provisional-v2"
 XML_NAMESPACE = "http://www.irs.gov/efile"
 MAX_MEMBER_BYTES = 8 * 1024 * 1024
 MAX_BATCH_XML_BYTES = 512 * 1024 * 1024
@@ -65,11 +65,15 @@ def _parse_filing(payload: bytes) -> dict:
         period = date.fromisoformat(period).isoformat()
     except ValueError as error:
         raise FilingError("invalid_tax_period_end") from error
-    amended = value("ReturnHeader/AmendedReturnInd")
+    if value("ReturnHeader/AmendedReturnInd"):
+        raise FilingError("unexpected_amendment_header")
+    amended = value("ReturnData/IRS990/AmendedReturnInd")
     tax_year = value("ReturnHeader/TaxYr")
     if tax_year and not re.fullmatch(r"[0-9]{4}", tax_year):
         raise FilingError("invalid_tax_year")
-    amendment_values = {"": None, "0": False, "1": True, "false": False, "true": True}
+    # Official 2024v5.0 CheckboxType is the literal X, not an XML boolean.
+    # Absence stays unknown in staging; do not manufacture an explicit false.
+    amendment_values = {"": None, "X": True}
     if amended not in amendment_values:
         raise FilingError("invalid_amendment_indicator")
     return {

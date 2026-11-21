@@ -2,14 +2,54 @@
 
 Place repeatable local development and data-maintenance scripts here. Document inputs, side effects, and safety.
 
-## IRS downloader (`data_extract.py`)
+## Offline loader draft (`load_supabase.py`)
+
+Validates bounded full-990 staging output without opening a database connection:
+
+```powershell
+./.venv/Scripts/python.exe -B -m scripts.load_supabase data/synthetic/filings.json --scope-version synthetic-v1
+./.venv/Scripts/python.exe -B -m unittest discover -s tests -p test_load_supabase.py -v
+```
+
+`prepare_batch` rejects review findings, unsupported/malformed/missing fields,
+duplicate/conflicting rows and oversized batches. `load_batch` accepts a caller-owned
+idle DB-API connection, invokes one parameterized function, commits a completed
+receipt or rolls back errors, and never retries automatically. It creates no
+connection and reads no credentials. The CLI only reports offline validation
+counts, not row data. SQL, scope and capacity configuration are described in
+`../supabase/README.md`. The SQL migration is ON HOLD for design review, not ready
+to apply. No driver, credentials or automatic pipeline runner are configured.
+
+## IRS downloader (`download_irs.py`)
 
 M01 local downloader slice, approved by Mark on 2026-11-15. Importing the module
 does no I/O. Real IRS collection still requires the source/scope decisions in
 `docs/delivery/DECISIONS.md` (O-01/O-02); this task used synthetic HTTP responses
-only. There is no CLI, scheduled refresh, parser, or Supabase connection.
+only. A fixed-scope sample CLI was subsequently approved below; there is no
+scheduled refresh or Supabase connection.
 
 Functions:
+
+### Bounded source sample (one-time approval required)
+
+```powershell
+./.venv/Scripts/python.exe -B -m scripts.download_irs --source-sample data/NEW-approved-snapshot
+```
+
+Fixed plan: OH/KY/IN EO CSVs (25 MB each), 2026 publication index (100 MB),
+175 MB shared response-payload budget. No retries, redirects or compression.
+Requires a NEW snapshot path and validates headers before publishing each file.
+Reports only aggregate counts, saves source/hash/time/size/header provenance, and
+marks partial failures explicitly. Existing snapshots are not replaced. Failed
+file partials are removed; completed files remain. Unknown-length bodies at the
+exact cap are rejected without an additional read. No XML or cloud actions.
+
+`download_file` now accepts optional `max_bytes`, `max_attempts` (1–3) and a shared
+`DownloadBudget`. Legacy callers retain three attempts and their original streaming
+behavior. The bounded path counts actual identity payload bytes across failed
+files/attempts; HTTP/TLS overhead is excluded. Source sample uses one attempt only.
+Source collection approval applies to a named run, not arbitrary future CLI runs.
+The completed approved snapshot and evidence are in the source contract/test matrix.
 
 The former `download_eo_state_file(url, states_list, local_filename)` interface
 is replaced by the functions below. Callers should use

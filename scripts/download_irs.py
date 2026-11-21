@@ -1,8 +1,9 @@
 """Explicitly invoked IRS downloads; importing this module performs no I/O."""
 
 from collections.abc import Callable
+import argparse
 import csv
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -24,6 +25,71 @@ SERIES_990_XML_URL = (
     "https://apps.irs.gov/pub/epostcard/990/xml/{year}/{xml_batch_id}.zip"
 )
 INDEX_REQUIRED_COLUMNS = {"EIN", "TAX_PERIOD", "OBJECT_ID"}
+EO_REQUIRED_COLUMNS = {
+    "EIN",
+    "NAME",
+    "STREET",
+    "CITY",
+    "STATE",
+    "ZIP",
+    "NTEE_CD",
+    "SUBSECTION",
+    "STATUS",
+    "TAX_PERIOD",
+    "REVENUE_AMT",
+}
+
+
+@dataclass
+class DownloadBudget:
+    """Response-payload bytes consumed across all files/attempts, not wire overhead."""
+
+    limit: int
+    consumed: int = 0
+
+    def __post_init__(self):
+        if type(self.limit) is not int or self.limit <= 0 or self.consumed != 0:
+            raise ValueError("Expected a fresh positive download budget.")
+
+
+def _bounded_chunks(response, max_bytes: int, budget: DownloadBudget):
+    """Read identity payload without ever requesting bytes beyond either cap."""
+    if response.status_code != 200:
+        raise ValueError("Bounded downloads require HTTP 200 without redirects.")
+    if response.headers.get("Content-Encoding", "identity").lower() not in (
+        "",
+        "identity",
+    ):
+        raise ValueError("Compressed responses are not allowed for bounded downloads.")
+    raw_length = response.headers.get("Content-Length")
+    expected = None
+    if raw_length is not None:
+        if not re.fullmatch(r"[0-9]+", raw_length):
+            raise ValueError("Invalid response length.")
+        expected = int(raw_length)
+        if expected > min(max_bytes, budget.limit - budget.consumed):
+            raise ValueError("Declared response exceeds download budget.")
+    received = 0
+    while expected is None or received < expected:
+        remaining = min(max_bytes - received, budget.limit - budget.consumed)
+        if remaining <= 0:
+            # Unknown-length responses at the exact cap fail closed: do not read
+            # an extra byte merely to discover whether the server has more data.
+            raise ValueError("Download budget exhausted before confirmed EOF.")
+        amount = min(8192, remaining)
+        if expected is not None:
+            amount = min(amount, expected - received)
+        chunk = response.raw.read(amount, decode_content=False)
+        if not chunk:
+            if expected is not None and received != expected:
+                raise ValueError("Response ended before its declared length.")
+            return
+        budget.consumed += len(chunk)
+        received += len(chunk)
+        if len(chunk) > amount:
+            raise ValueError("Response reader exceeded requested byte limit.")
+        yield chunk
+
 
 eo_states = {
     "alabama": "al",
@@ -89,6 +155,7 @@ class DownloadResult:
     downloaded_at: datetime
     byte_count: int
     sha256: str
+    response_headers: dict[str, str] = field(default_factory=dict)
 
 
 def build_eo_url(state: str) -> str:
@@ -128,7 +195,13 @@ def build_series_990_xml_url(year: int, xml_batch_id: str) -> str:
 
 
 def download_file(
-    url: str, destination: Path, *, validate: Callable[[Path], None] | None = None
+    url: str,
+    destination: Path,
+    *,
+    validate: Callable[[Path], None] | None = None,
+    max_bytes: int | None = None,
+    max_attempts: int = 3,
+    budget: DownloadBudget | None = None,
 ) -> DownloadResult:
     """Download one file with at most three attempts and atomic publication.
 
@@ -138,15 +211,30 @@ def download_file(
     connection/read failures are retried after 0.5 and 1 second. Local I/O errors,
     empty bodies, validation failures, and other HTTP errors fail immediately.
     """
+    if type(max_attempts) is not int or not 1 <= max_attempts <= 3:
+        raise ValueError("Expected one to three attempts.")
+    if max_bytes is not None and (type(max_bytes) is not int or max_bytes <= 0):
+        raise ValueError("Expected a positive per-file byte limit.")
+    if budget is not None and max_bytes is None:
+        raise ValueError("A shared budget also requires a per-file limit.")
+    if max_bytes is not None and budget is None:
+        budget = DownloadBudget(max_bytes)
+    if budget is not None and budget.consumed >= budget.limit:
+        raise ValueError("Download budget is already exhausted.")
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
     retry_statuses = {429, 500, 502, 503, 504}
-    for attempt in range(3):
+    for attempt in range(max_attempts):
         temporary_path = None
         try:
             digest = hashlib.sha256()
             byte_count = 0
-            with requests.get(url, stream=True, timeout=(10, 60)) as response:
+            request_options = {"stream": True, "timeout": (10, 60)}
+            if max_bytes is not None:
+                request_options.update(
+                    allow_redirects=False, headers={"Accept-Encoding": "identity"}
+                )
+            with requests.get(url, **request_options) as response:
                 response.raise_for_status()
                 with tempfile.NamedTemporaryFile(
                     dir=destination.parent,
@@ -155,7 +243,12 @@ def download_file(
                     delete=False,
                 ) as temporary:
                     temporary_path = Path(temporary.name)
-                    for chunk in response.iter_content(chunk_size=8192):
+                    chunks = (
+                        response.iter_content(chunk_size=8192)
+                        if max_bytes is None
+                        else _bounded_chunks(response, max_bytes, budget)
+                    )
+                    for chunk in chunks:
                         if chunk:
                             temporary.write(chunk)
                             digest.update(chunk)
@@ -170,6 +263,17 @@ def download_file(
                 downloaded_at=datetime.now(timezone.utc),
                 byte_count=byte_count,
                 sha256=digest.hexdigest(),
+                response_headers={
+                    name: response.headers[name]
+                    for name in (
+                        "Content-Type",
+                        "Content-Length",
+                        "Content-Encoding",
+                        "ETag",
+                        "Last-Modified",
+                    )
+                    if name in response.headers
+                },
             )
             temporary_path.replace(destination)
             return result
@@ -185,7 +289,7 @@ def download_file(
                     requests.exceptions.ChunkedEncodingError,
                 ),
             )
-            if not retryable or attempt == 2:
+            if not retryable or attempt == max_attempts - 1:
                 raise
         finally:
             if temporary_path is not None:
@@ -361,3 +465,190 @@ def download_series_990_xml(
     return _download_990_batch(
         list(dict.fromkeys(plan)), output_dir, _validate_xml_archive
     )
+
+
+def _validate_eo(path: Path) -> None:
+    with path.open(encoding="utf-8-sig", newline="") as stream:
+        header = next(csv.reader(stream, strict=True), [])
+    if not EO_REQUIRED_COLUMNS.issubset(header) or len(set(header)) != len(header):
+        raise ValueError("EO CSV has missing or duplicate header columns.")
+
+
+def summarize_source_sample(snapshot: Path) -> dict:
+    """Stream the approved CSVs; return aggregate quality counts, never raw rows."""
+    candidates = set()
+    report = {
+        "states": {},
+        "index_rows": 0,
+        "matching_full_990_rows": 0,
+        "matching_eins": 0,
+        "invalid_rows": 0,
+        "tax_year_coverage_verified": False,
+    }
+    for state in ("oh", "ky", "in"):
+        count = invalid = duplicate = 0
+        seen = set()
+        path = Path(snapshot) / f"eo_{state}.csv"
+        _validate_eo(path)
+        with path.open(encoding="utf-8-sig", newline="") as stream:
+            for row in csv.DictReader(stream, strict=True):
+                count += 1
+                ein = row.get("EIN", "")
+                if (
+                    None in row
+                    or not isinstance(ein, str)
+                    or not re.fullmatch(r"[0-9]{9}", ein)
+                    or row.get("STATE") != state.upper()
+                ):
+                    invalid += 1
+                    continue
+                if ein in seen:
+                    duplicate += 1
+                seen.add(ein)
+                candidates.add(ein)
+        if count == 0:
+            raise ValueError("EO source has no data rows.")
+        report["states"][state.upper()] = {
+            "rows": count,
+            "invalid_rows": invalid,
+            "duplicate_eins": duplicate,
+        }
+        report["invalid_rows"] += invalid
+    index = Path(snapshot) / "index_2026.csv"
+    _validate_index(index)
+    matched = set()
+    with index.open(encoding="utf-8-sig", newline="") as stream:
+        reader = csv.DictReader(stream, strict=True)
+        if "RETURN_TYPE" not in reader.fieldnames:
+            raise ValueError("Index is missing RETURN_TYPE for full-990 selection.")
+        for row in reader:
+            report["index_rows"] += 1
+            ein = row.get("EIN", "")
+            if (
+                None in row
+                or not isinstance(ein, str)
+                or not re.fullmatch(r"[0-9]{9}", ein)
+                or not re.fullmatch(r"[0-9]{6}", row.get("TAX_PERIOD") or "")
+                or not row.get("OBJECT_ID")
+                or not row.get("RETURN_TYPE")
+            ):
+                report["invalid_rows"] += 1
+                continue
+            if ein in candidates and row["RETURN_TYPE"] == "990":
+                report["matching_full_990_rows"] += 1
+                matched.add(ein)
+    if report["index_rows"] == 0:
+        raise ValueError("Index has no data rows.")
+    report.update(candidate_eins=len(candidates), matching_eins=len(matched))
+    return report
+
+
+def download_source_sample(snapshot: Path) -> dict:
+    """Execute the fixed, owner-approved four-CSV plan once into a NEW snapshot.
+
+    Caps count identity response payload, including failed/partial files. Network
+    headers and transport overhead are excluded. Existing files are never replaced.
+    """
+    snapshot = Path(snapshot)
+    snapshot.mkdir(parents=True, exist_ok=False)
+    budget = DownloadBudget(175_000_000)
+    plan = [
+        (build_eo_url(state), f"eo_{state}.csv", 25_000_000, _validate_eo)
+        for state in ("oh", "ky", "in")
+    ]
+    plan.append(
+        (
+            build_series_990_index_url(2026),
+            "index_2026.csv",
+            100_000_000,
+            _validate_index,
+        )
+    )
+    manifest = {
+        "status": "running",
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "payload_budget": budget.limit,
+        "files": [
+            {
+                "source_url": url,
+                "path": filename,
+                "max_bytes": limit,
+                "status": "pending",
+            }
+            for url, filename, limit, _ in plan
+        ],
+    }
+    manifest_path = snapshot / "source-sample.json"
+    _write_manifest(manifest_path, manifest)
+    try:
+        for (url, filename, limit, validator), entry in zip(
+            plan, manifest["files"], strict=True
+        ):
+            entry["status"] = "downloading"
+            _write_manifest(manifest_path, manifest)
+            result = download_file(
+                url,
+                snapshot / filename,
+                validate=validator,
+                max_bytes=limit,
+                max_attempts=1,
+                budget=budget,
+            )
+            entry.update(
+                status="complete",
+                byte_count=result.byte_count,
+                sha256=result.sha256,
+                downloaded_at=result.downloaded_at.isoformat(),
+                response_headers=result.response_headers,
+            )
+            manifest["payload_bytes_consumed"] = budget.consumed
+            _write_manifest(manifest_path, manifest)
+        manifest["summary"] = summarize_source_sample(snapshot)
+        manifest["status"] = (
+            "needs_review" if manifest["summary"]["invalid_rows"] else "complete"
+        )
+    except Exception as error:
+        manifest.update(status="failed", error_type=type(error).__name__)
+        for entry in manifest["files"]:
+            if entry["status"] == "downloading":
+                entry["status"] = "failed"
+        raise
+    finally:
+        manifest.update(
+            payload_bytes_consumed=budget.consumed,
+            finished_at=datetime.now(timezone.utc).isoformat(),
+        )
+        _write_manifest(manifest_path, manifest)
+    return manifest
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Run the explicitly approved four-CSV local source sample."
+    )
+    parser.add_argument(
+        "--source-sample",
+        type=Path,
+        required=True,
+        help="NEW ignored local snapshot directory",
+    )
+    args = parser.parse_args()
+    try:
+        manifest = download_source_sample(args.source_sample)
+    except Exception as error:
+        print(json.dumps({"status": "failed", "error_type": type(error).__name__}))
+        return 1
+    print(
+        json.dumps(
+            {
+                "status": manifest["status"],
+                "payload_bytes_consumed": manifest["payload_bytes_consumed"],
+                "summary": manifest["summary"],
+            }
+        )
+    )
+    return 2 if manifest["status"] == "needs_review" else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

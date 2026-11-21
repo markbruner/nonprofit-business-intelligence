@@ -20,9 +20,9 @@ def filing(revenue="0", expenses="", form="990", amended=""):
         <ReturnTypeCd>{form}</ReturnTypeCd>
         <TaxPeriodEndDt>2025-06-30</TaxPeriodEndDt>
         <TaxYr>2024</TaxYr>
-        <AmendedReturnInd>{amended}</AmendedReturnInd>
       </ReturnHeader>
       <ReturnData><IRS990>
+        <AmendedReturnInd>{amended}</AmendedReturnInd>
         <CYTotalRevenueAmt>{revenue}</CYTotalRevenueAmt>
         <CYTotalExpensesAmt>{expenses}</CYTotalExpensesAmt>
       </IRS990></ReturnData>
@@ -85,7 +85,7 @@ class Extract990Tests(unittest.TestCase):
             [
                 ("123_public.xml", original),
                 ("other/123_public.xml", filing(revenue="90")),
-                ("456_public.xml", filing(revenue="120", amended="1")),
+                ("456_public.xml", filing(revenue="120", amended="X")),
             ],
         )
         batch = extract_batch(self.manifest)
@@ -131,6 +131,29 @@ class Extract990Tests(unittest.TestCase):
         with patch("scripts.extract_990.MAX_MEMBER_BYTES", 10):
             report = extract_batch(self.manifest)["report"]
         self.assertEqual("member_too_large", report["issues"][0]["reason"])
+
+    def test_schema_shaped_amendment_location_and_checkbox(self):
+        self.write_archive(
+            "amendments.zip",
+            [
+                ("checked.xml", filing(amended="X")),
+                ("invalid-boolean.xml", filing(amended="true")),
+                (
+                    "wrong-location.xml",
+                    filing().replace(
+                        "<ReturnHeader>",
+                        "<ReturnHeader><AmendedReturnInd>X</AmendedReturnInd>",
+                    ),
+                ),
+            ],
+        )
+        result = extract_batch(self.manifest)
+        self.assertEqual(1, len(result["filings"]))
+        self.assertIs(result["filings"][0]["amended"], True)
+        self.assertEqual(
+            {"invalid_amendment_indicator", "unexpected_amendment_header"},
+            {issue["reason"] for issue in result["report"]["issues"]},
+        )
 
     def test_rejects_incomplete_mismatched_or_escaping_archive(self):
         archive = self.write_archive("one.zip", [("123_public.xml", filing())])

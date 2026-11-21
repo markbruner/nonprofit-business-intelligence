@@ -6,7 +6,8 @@ This is a **test plan**, not a claim that tests have been written or passed. Add
 |---|---|---|---|
 | M01 | DAT-002–DAT-005, DAT-007–DAT-008 | Idempotent import; EIN alias/collision; source tax periods; amendment selection; missing-vs-zero handling | NOT RUN |
 | M01 | DAT-001, DAT-006, DAT-009–DAT-011 | Source metadata, manual import validation, county config, geocoding provenance, failed-run integrity | NOT RUN |
-| M01 | DAT-012 | Below-budget batch proceeds; threshold-crossing batch stops before writes; missing/stale capacity fails closed; rerun adds no duplicates; measurements include indexes and overhead; actual usage and provisioned disk reported separately; no automatic disk expansion | NOT RUN |
+| M01 | DAT-012 | Below-budget batch proceeds; threshold-crossing batch stops before writes; missing/stale capacity fails closed; rerun adds no duplicates; measurements include indexes and overhead; actual usage and provisioned disk reported separately; no automatic disk expansion | PARTIAL: synthetic SQL gate tests pass; real calibration/provider behavior unverified |
+| M01 | DAT-013 | Versioned OH/KY/IN source snapshots define EIN candidates; out-of-scope EIN rejected; no full-990 filing does not remove organization from registry | NOT RUN |
 | M01 | SCR-001–SCR-005 | Revenue band, surplus, margin guard, trend gaps, mission corrections | NOT RUN |
 | M01 | SCR-006–SCR-010 | Versioned deterministic rules, reason codes, override audit, no pipeline contamination | NOT RUN |
 | M02 | SEC-001–SEC-007, SEC-009, SEC-011 | Signed-out/manager/admin/inactive DB+API authorization and secret exposure tests | NOT RUN |
@@ -20,6 +21,79 @@ This is a **test plan**, not a claim that tests have been written or passed. Add
 | Possible M05 | AIR-001–AIR-010 | Public source constraints, bounded costs, review workflow, factual error audit | DEFERRED |
 
 ## Report actual execution per task
+
+### 2026-11-21 — approved bounded four-CSV source sample
+
+- Eight new synthetic bounds tests: PASS; all 28 downloader tests: PASS before run.
+  Full Python suite after run: PASS, 43 tests. Black API format/check: PASS for
+  downloader and its tests; `git diff --check`: PASS (line-ending warning only).
+- `./.venv/Scripts/python.exe -B -m scripts.download_irs --source-sample data/irs-source-sample-20261121-01`:
+  PASS, exit 0, 89,863,197 payload bytes under the 175,000,000-byte budget.
+  No retries, redirects, compressed payloads, XML archives, credentials or cloud access.
+- Verified actual EO/index CSV headers and streamed aggregate EIN/state/index
+  checks. 145,632 candidate EINs; 516,019 index rows; 17,177 matched full-990 rows
+  for 16,605 EINs. No invalid checked row shapes. See IRS_SOURCE_CONTRACT.md for
+  source limitations and exact byte counts. Real rows never copied into tests/logs.
+- Response-budget tests cover exact declared boundaries, unknown-length boundary
+  rejection without over-read, shared partial-byte accounting, header rejection,
+  no retry/overwrite, validation failure and partial manifests.
+- The preflight drove explicit fixed-source/cap/no-retry controls. Recovery is
+  task-owned partial cleanup; earlier completed snapshots are preserved. Raw
+  snapshots/manifests remain Git-ignored. This is partial M01 evidence only.
+
+### 2026-11-21 — offline loader and local database verification
+
+- Source verification follow-up: two official documentation schema ZIPs inspected
+  in memory (2023v5.1 and 2024v5.0; under 300 KB each). Corrected amendment field
+  location (IRS990 body) and checkbox value X. Parser contract bumped to v2;
+  old v1 staging is rejected by the loader/SQL contract. Full Python suite: PASS,
+  35 tests, including a new schema-shaped amendment test. Black API check: PASS
+  for the four parser/loader files; whitespace check: PASS.
+- Non-superuser migration-owner test initially FAILED at ownership transfer;
+  a subsequent draft exposed ineffective grant ordering. Corrected temporary
+  SET permission and ACL ordering. Final migration, SQL suite with explicit ACL
+  assertions, and empty-schema rollback: PASS under a non-superuser CREATEROLE
+  database owner on PostgreSQL 16.
+- `setup/loader_role.sql` applied locally as that owner: disabled identity can
+  execute loader, cannot insert directly or update budget, has no executor
+  membership and no LOGIN/superuser/CREATEROLE/CREATEDB/replication/BYPASSRLS.
+  Owner's final executor membership has SET=false and INHERIT=false.
+- HTTP HEAD checks only: three state CSV and four annual index URLs returned 200;
+  contents remain unverified. See `IRS_SOURCE_CONTRACT.md` for bounded proposed
+  sampling and outstanding 2025 mapping evidence. No nonprofit datasets/XML
+  archives downloaded, Supabase connections or credentials used.
+
+- Follow-up after Mark selected XML tax years 2023–2025: migration and SQL suite
+  rerun PASS in a fresh isolated PostgreSQL 16 container, including rejection of
+  unknown and out-of-policy tax years. No operational policy was seeded in the
+  migration; owner configuration must set the approved years before live use.
+
+- `./.venv/Scripts/python.exe -B -m unittest discover -s tests -p test_load_supabase.py -v`: PASS, 8 tests.
+- Covers input/provenance/bounds validation, null/zero, deterministic payload,
+  parameterized injected-connection call, commit/rollback behavior with mocks,
+  and offline CLI output. Mocked database errors do NOT verify actual SQL gates.
+- Full `./.venv/Scripts/python.exe -B -m unittest discover -s tests -v`: initially
+  FAILED (20 downloader errors due to old mock targets after an existing module
+  rename). Updated four mock targets only; rerun PASS, 34 tests. Downloader
+  implementation unchanged. API/contract suite: PASS, 8 tests.
+- Black CLI hung and was stopped; Black Python API formatted and then checked
+  `scripts/load_supabase.py` and `tests/test_load_supabase.py`: PASS.
+- `git diff --check`: PASS.
+- SQL migration: PASS on isolated local PostgreSQL 16 (`postgis/postgis:16-3.7`).
+  `docker exec nbi-loader-test-20261121 psql -U postgres -v ON_ERROR_STOP=1 -f /tmp/nbi-tests.sql`:
+  PASS for `supabase/tests/990_loader.sql`, including storage threshold equality,
+  missing/stale/future/mismatched/over-allowance measurements, scope rejection,
+  direct-write and unauthorized-role denial, valid import/retry, cross-run conflict,
+  late-write failure rollback, recovery and provenance. All test changes rolled back.
+- Down migration on the empty synthetic schema and up-migration reapplication:
+  PASS. Docker had networking disabled and tmpfs-only database storage; standard
+  Supabase role names were simulated, not a full Supabase stack. No credentials,
+  external data, downloads or Supabase connections used. Container removed afterward.
+- Schema revised to internal organization IDs and authoritative typed financial
+  facts with an integrity hash instead of duplicate JSON facts. Reporting mart,
+  live source reconciliation, scope generation, capacity calibration, concurrency
+  and interrupted-COMMIT tests remain outstanding. See `supabase/README.md`.
+  This is partial technical evidence, not an M01 technical or business gate pass.
 
 ### 2026-11-17 — local Form 990 XML extractor
 

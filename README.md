@@ -26,6 +26,7 @@ docs/delivery/DECISIONS.md        Confirmed choices, assumptions, unresolved app
 docs/delivery/CODEX-WORKFLOW.md   Efficient agent work patterns and prompts
 docs/delivery/TEST-MATRIX.md      Requirement-to-test traceability
 docs/tasks/M01-data-foundation.md First bounded task brief
+supabase/README.md                Unapplied loader/schema drafts and design-review hold
 docs/reference/original-product-spec-v1.md  Archived interview synthesis
 ```
 
