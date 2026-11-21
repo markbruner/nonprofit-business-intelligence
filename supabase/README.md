@@ -196,6 +196,44 @@ not persisted inside the rolled-back transaction: an approved future runner must
 capture sanitized failure type/timing separately. Do not log exception text, DSNs
 or payloads. This is partial DAT-011 evidence, not complete failure logging.
 
+## Post-import storage and next batch
+
+Post-second-trial read-back at 17:29:55 UTC confirms max_rows=30, unchanged remaining
+returned safeguards, counts 33/33/2/33 and LOGIN false. Current DB=11,622,067 bytes,
+ingestion relations=352,256, WAL=83,886,444. DB and relation interval growth each
+73,728 bytes; small-sample evidence only. Retain growth/reserve limits. Earlier
+requests for the second-trial read-back below are historical and now satisfied.
+
+Latest completion: Mark returned the next trial's expected 33 organizations,
+33 filings, 2 import runs, 33 links; LOGIN false, DB 11,622,067 bytes. The presented
+transaction leaves max_rows=30. Run `diagnostics/post_import_storage.sql` again to
+read back policy, relation sizes, WAL and the second run's baseline before further
+batch planning. No further import is authorized; do not rerun either trial script.
+Earlier preparation checkpoints below are historical.
+
+Latest checkpoint: owner returned successful diagnostic with counts 3/3/1/3,
+11,548,339 database bytes, 83,886,444 WAL bytes and 278,528 ingestion relation bytes.
+DB delta from recorded pre-import baseline is 90,112 bytes; do not extrapolate from
+three filings. At 17:23 UTC the Disk panel shows 273.26 MB total, System 167.54 MB,
+Database 25.72 MB. Conservative next-batch projection including reserve/growth is
+559,808,876 bytes. The larger panel Database category is accounted for separately.
+Thirty-record continuation SQL passed isolated PostgreSQL 17.12 tests; cloud run
+and exact max_rows 3->30 change are pending explicit approval. Other limits and
+LOGIN remain unchanged. See NEXT-BATCH-PREFLIGHT.md for complete evidence.
+
+Run `diagnostics/post_import_storage.sql` as the owner in the dedicated dev project
+and return its aggregate result. The transaction is read-only: DB/WAL bytes,
+per-table/index sizes, counts, latest import baseline and current policy. No grants,
+EINs or financial facts are emitted. Supply Disk panel System usage, provisioned
+size and actual metric timestamp separately. Do not substitute zero on errors.
+The owner has returned its successful cloud result; it also passed locally.
+
+Thirty new filings are prepared locally (ten/state; 9 tax-2025, 21 tax-2024), with
+no source identity/period/year or quality findings. Payload 20,121 compact bytes;
+current conservative growth floor is 1,966,080 bytes. No policy change or upload
+occurred; max_rows remains 3. Review storage before a separate exact policy/batch
+approval. See `../docs/delivery/NEXT-BATCH-PREFLIGHT.md`.
+
 ## First data trial — owner-run completion
 
 Mark approved and manually ran `first-cloud-trial-20261121-1715.sql` with System

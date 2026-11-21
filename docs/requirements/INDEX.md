@@ -37,6 +37,28 @@
 
 ## Stop/go gates and outstanding choices
 
+2026-11-21 latest storage checkpoint: owner read-back verifies second-trial counts,
+max_rows=30, remaining safeguards and LOGIN false. DB/relation growth each 73,728
+bytes; WAL allocation unchanged. Partial DAT-005/011/012 evidence, not bulk-scale
+calibration. Pending SQL read-back notes below are superseded; future imports and
+milestone release remain unapproved.
+
+2026-11-21 latest completion: owner returned 33 organizations / 33 filings / 2 runs /
+33 provenance links, LOGIN false, DB 11,622,067 bytes. Matches second-trial expected
+totals; partial DAT-005/011/012 evidence. Post-batch storage/policy read-back pending;
+earlier pending-execution notes are historical. Further imports remain unapproved.
+
+2026-11-21 latest next-batch checkpoint: post-import diagnostic received and reviewed;
+conservative thirty-filing projection ~560 MB including reserve/growth, below 1.5 GB
+stop. Populated-target SQL prepared/tested; max_rows 3->30 and upload await explicit
+approval. DAT-005/011/012 partial evidence; 62 Python tests pass. Earlier pending
+measurement notes below are historical. No milestone release.
+
+2026-11-21 next-batch preparation: 30 additional filings validated locally, 10/state,
+for partial DAT-003/007/008/013 evidence. DAT-012 post-import query prepared; owner
+results and fresh System/provisioned readings pending. No cloud policy change or
+larger import approved. See `../delivery/NEXT-BATCH-PREFLIGHT.md`.
+
 2026-11-21 latest checkpoint: Mark approved and ran the first cloud transaction;
 returned complete with 3 organizations / 3 filings / 1 run / 3 provenance links
 and LOGIN false. Partial DAT-005/011/012 evidence. Earlier preparation blockers

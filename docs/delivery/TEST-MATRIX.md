@@ -22,6 +22,56 @@ This is a **test plan**, not a claim that tests have been written or passed. Add
 
 ## Report actual execution per task
 
+### 2026-11-21 — second trial post-import policy/storage read-back
+
+- Owner-supplied diagnostic at 17:29:55 UTC confirms 33/33/2/33, LOGIN false,
+  latest row_count=30 and persisted max_rows=30; all returned remaining policy
+  settings unchanged. DB 11,622,067, WAL 83,886,444, ingest relations 352,256 bytes.
+- Latest run baseline 11,548,339; DB delta 73,728 bytes. Prior relation baseline
+  278,528; relation delta also 73,728. This includes scope/provenance/page allocation
+  and is small-sample evidence only. Stable allocated WAL does not measure WAL produced.
+- Partial hosted DAT-005/011/012 evidence. No new code/test execution in this
+  documentation-only checkpoint; no future load authorized. System/disk panel
+  freshness, history coverage and authenticated Python transport remain separate.
+
+### 2026-11-21 — owner-reported next thirty cloud completion
+
+- Returned complete: organizations=33, filings=33, import_runs=2,
+  provenance_links=33, login_enabled=false, database_bytes_after=11,622,067.
+- Counts match the presented script's assertions and internal duplicate check;
+  owner-reported evidence, no independent agent cloud connection. No separate
+  pre-execution approval message was received; user manually ran and reported it.
+- Difference from preceding DB observation is 73,728 bytes; this is not a precise
+  batch-only estimate. Current WAL/relation sizes/second-run baseline and persisted
+  max_rows=30 policy read-back remain pending. Do not rerun either trial script.
+
+### 2026-11-21 — post-import review and next cloud SQL preparation
+
+- Owner-reported diagnostic: 11,548,339 DB bytes / 83,886,444 WAL bytes / 278,528
+  ingestion relation bytes; original baseline 11,458,227, delta 90,112; counts 3/3/1/3,
+  LOGIN false and initial policy unchanged. System/Database category evidence
+  timestamp 17:23 UTC. Larger dashboard Database bound is included conservatively.
+- Full Python suite 62 passed. Added continuation tests for population fingerprint,
+  exact quotas/exclusions/year boundaries, policy preview, and larger provider DB
+  category accounting. Existing first-trial tests still pass.
+- Actual non-superuser PostgreSQL 17.12 sessions: first trial succeeds; next missing,
+  stale and over-budget cases reject without new records or max_rows changes; next
+  success yields 33 organizations/33 filings/2 runs/33 links, LOGIN false; internal
+  repeat adds no duplicates. Whole-script replay and changed-baseline cases reject;
+  owner SET/INHERIT false verified. Read-only storage diagnostic executes locally.
+- Container inspected/removed; final real-data SQL generated locally after source
+  revalidation. No larger cloud execution or policy change approved/executed.
+
+### 2026-11-21 — next thirty local preparation
+
+- Five new synthetic selection tests pass; full Python suite 59 passed. Covers
+  exclusions, latest-per-EIN selection, state quotas, malformed/conflicting index
+  identities and form/archive boundaries. Reuses tested snapshot/ZIP validators.
+- Actual local preparation: 30 selected/staged, ten/state, 9 tax-2025 / 21 tax-2024;
+  zero index/year/quality findings, payload 20,121 compact bytes. No network or DB.
+- Added read-only post-import diagnostic; hosted SQL execution and actual storage
+  interpretation pending owner result. No larger upload or policy change tested.
+
 ### 2026-11-21 — owner-run first cloud import
 
 - Explicit approval preceded manual SQL Editor execution of the generated trial.

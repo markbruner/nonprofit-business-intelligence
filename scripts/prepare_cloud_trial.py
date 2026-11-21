@@ -25,16 +25,19 @@ def dollar_quote(text: str, label: str) -> str:
     return delimiter + text + delimiter
 
 
-def system_evidence(timestamp_us: int, displayed_mb: str) -> tuple[datetime, int]:
+def displayed_mb_bound(displayed_mb: str) -> int:
     amount = Decimal(displayed_mb)
     if not amount.is_finite() or amount <= 0 or amount >= 1900:
-        raise ValueError("System usage must be a positive bounded MB reading.")
+        raise ValueError("Usage must be a positive bounded MB reading.")
+    # Conservative upper bound for either decimal MB or binary MiB plus rounding.
+    return (int(amount.to_integral_value(rounding=ROUND_CEILING)) + 1) * 1024**2
+
+
+def system_evidence(timestamp_us: int, displayed_mb: str) -> tuple[datetime, int]:
     observed = datetime.fromtimestamp(timestamp_us // 1_000_000, timezone.utc).replace(
         microsecond=timestamp_us % 1_000_000
     )
-    # Conservative upper bound for either decimal MB or binary MiB plus rounding.
-    bound = (int(amount.to_integral_value(rounding=ROUND_CEILING)) + 1) * 1024**2
-    return observed, bound
+    return observed, displayed_mb_bound(displayed_mb)
 
 
 def render_trial(
@@ -44,17 +47,43 @@ def render_trial(
     observed: datetime | None = None,
     system_bound: int | None = None,
     owner: str = "postgres",
+    prior_batch: dict | None = None,
+    database_category_bound: int | None = None,
 ) -> tuple[str, dict]:
     """Build one all-or-nothing trial. Missing evidence produces a blocked review template."""
     if not re.fullmatch(r"[a-z_][a-z0-9_]{0,62}", owner):
         raise ValueError("Invalid owner role identifier.")
-    payload = prepare_batch(batch, SCOPE_VERSION)
-    if len(payload["filings"]) != 3 or len({r["ein"] for r in payload["filings"]}) != 3:
-        raise ValueError("Trial requires exactly three distinct organizations/filings.")
+    continuation = prior_batch is not None
+    scope = "oh-ky-in-next-30-v1" if continuation else SCOPE_VERSION
+    count = 30 if continuation else 3
+    payload = prepare_batch(batch, scope)
+    if (
+        len(payload["filings"]) != count
+        or len({r["ein"] for r in payload["filings"]}) != count
+    ):
+        raise ValueError("Trial requires the exact distinct organization/filing count.")
     selected = selection.get("selection", {})
-    if set(selected) != {"OH", "KY", "IN"}:
+    if continuation:
+        if not isinstance(selected, list) or any(
+            sum(r.get("state") == state for r in selected) != 10
+            for state in ("OH", "KY", "IN")
+        ):
+            raise ValueError("Expected ten selected candidates per approved state.")
+        prior = prepare_batch(prior_batch, SCOPE_VERSION)
+        if len(prior["filings"]) != 3 or {r["ein"] for r in prior["filings"]} & {
+            r["ein"] for r in payload["filings"]
+        }:
+            raise ValueError(
+                "Expected three previous organizations without new overlap."
+            )
+        selected_rows = selected
+    elif set(selected) != {"OH", "KY", "IN"}:
         raise ValueError("Expected the three-state local selection.")
-    expected = {r["object_id"]: r for r in selected.values()}
+    else:
+        selected_rows = selected.values()
+    expected = {r["object_id"]: r for r in selected_rows}
+    if len(expected) != count:
+        raise ValueError("Selected filing identifiers must be distinct.")
     for row in payload["filings"]:
         original = expected.get(row["source_filing_id"])
         if (
@@ -75,6 +104,16 @@ def render_trial(
         or not 0 < system_bound < 2_000_000_000
     ):
         raise ValueError("Invalid capacity evidence.")
+    if database_category_bound is not None and (
+        type(database_category_bound) is not int
+        or not 0 < database_category_bound < 2_000_000_000
+    ):
+        raise ValueError("Invalid dashboard database category bound.")
+    category_extra = (
+        "0"
+        if database_category_bound is None
+        else f"greatest({database_category_bound}-pg_database_size(current_database()),0)"
+    )
     timestamp_sql = (
         "null::timestamptz"
         if observed is None
@@ -85,10 +124,52 @@ def render_trial(
     )
     payload_sql = dollar_quote(raw, "payload") + "::jsonb"
     # Only validated numeric EINs and a hexadecimal digest enter these literals.
-    evidence = "reviewed-local-three:" + payload["manifest_sha256"]
+    evidence = "reviewed-local-batch:" + payload["manifest_sha256"]
     scope_values = ",\n    ".join(
-        f"('{SCOPE_VERSION}', '{r['ein']}', '{evidence}')" for r in payload["filings"]
+        f"('{scope}', '{r['ein']}', '{evidence}')" for r in payload["filings"]
     )
+    baseline_guard = """
+    if exists(select 1 from nonprofit_ingest.organizations)
+        or exists(select 1 from nonprofit_ingest.organization_filings)
+        or exists(select 1 from nonprofit_ingest.import_runs)
+        or exists(select 1 from nonprofit_ingest.import_run_filings)
+        or exists(select 1 from nonprofit_ingest.approved_eins)
+        or exists(select 1 from nonprofit_ingest.capacity_measurement) then
+        raise exception 'first_trial_target_not_empty_review_before_retry';
+    end if;
+"""
+    policy_change = ""
+    capacity_conflict = ""
+    if continuation:
+        prior_sql = (
+            dollar_quote(
+                json.dumps(prior, sort_keys=True, separators=(",", ":")), "prior"
+            )
+            + "::jsonb"
+        )
+        baseline_guard = f"""
+    if (select count(*) from nonprofit_ingest.organizations) <> 3
+        or (select count(*) from nonprofit_ingest.organization_filings) <> 3
+        or (select count(*) from nonprofit_ingest.import_runs) <> 1
+        or (select count(*) from nonprofit_ingest.import_run_filings) <> 3
+        or (select count(*) from nonprofit_ingest.approved_eins) <> 3
+        or (select count(*) from nonprofit_ingest.capacity_measurement) <> 1
+        or not exists(select 1 from nonprofit_ingest.import_runs
+            where run_key=encode(sha256(convert_to(({prior_sql})::text,'UTF8')),'hex')) then
+        raise exception 'previous_trial_baseline_changed_review_required';
+    end if;
+"""
+        policy_change = """
+update nonprofit_ingest.storage_policy set max_rows=30,
+    approved_at=statement_timestamp(),
+    approval_reference='Owner-approved next thirty-filing dev trial; see 2026-11-21 decision register'
+where singleton;
+"""
+        capacity_conflict = """
+on conflict (singleton) do update set project_ref=excluded.project_ref,
+    measured_at=excluded.measured_at, database_bytes=excluded.database_bytes,
+    other_disk_bytes=excluded.other_disk_bytes, provisioned_bytes=excluded.provisioned_bytes
+"""
     preflight = f"""
 declare m record; p nonprofit_ingest.storage_policy%rowtype;
         observed timestamptz := {timestamp_sql};
@@ -126,14 +207,7 @@ begin
     if m.admin_ok is distinct from true or m.elevated is distinct from false then
         raise exception 'owner_membership_state_unexpected';
     end if;
-    if exists(select 1 from nonprofit_ingest.organizations)
-        or exists(select 1 from nonprofit_ingest.organization_filings)
-        or exists(select 1 from nonprofit_ingest.import_runs)
-        or exists(select 1 from nonprofit_ingest.import_run_filings)
-        or exists(select 1 from nonprofit_ingest.approved_eins)
-        or exists(select 1 from nonprofit_ingest.capacity_measurement) then
-        raise exception 'first_trial_target_not_empty_review_before_retry';
-    end if;
+    {baseline_guard}
 end
 """
     trial = f"""
@@ -148,12 +222,14 @@ begin
     end if;
 end
 """
-    postflight = """
+    total = 33 if continuation else 3
+    runs = 2 if continuation else 1
+    postflight = f"""
 begin
-    if (select count(*) from nonprofit_ingest.organizations) <> 3
-        or (select count(*) from nonprofit_ingest.organization_filings) <> 3
-        or (select count(*) from nonprofit_ingest.import_runs) <> 1
-        or (select count(*) from nonprofit_ingest.import_run_filings) <> 3 then
+    if (select count(*) from nonprofit_ingest.organizations) <> {total}
+        or (select count(*) from nonprofit_ingest.organization_filings) <> {total}
+        or (select count(*) from nonprofit_ingest.import_runs) <> {runs}
+        or (select count(*) from nonprofit_ingest.import_run_filings) <> {total} then
         raise exception 'trial_counts_failed';
     end if;
     if exists (select 1 from pg_auth_members a
@@ -164,21 +240,24 @@ begin
     end if;
 end
 """
-    sql = f"""-- LOCAL REVIEW ARTIFACT: contains the three PUBLIC IRS sample records.
--- DO NOT RUN IN SUPABASE WITHOUT EXPLICIT FIRST-DATA-TRIAL APPROVAL.
+    sql = f"""-- LOCAL REVIEW ARTIFACT: contains PUBLIC IRS sample records.
+-- DO NOT RUN IN SUPABASE WITHOUT EXPLICIT APPROVAL OF THIS BATCH AND POLICY.
 -- Confirm dedicated dev target {PROJECT_REF}; SQL Editor may retain query text.
 -- No passwords, LOGIN activation or Python connection. Run the WHOLE transaction.
 -- Metadata missing/stale or any failure rolls back ALL trial writes and grants.
 begin;
 set local statement_timeout = '120s';
 set local lock_timeout = '10s';
+select pg_advisory_xact_lock(741021, 990);
 do {dollar_quote(preflight, 'preflight')};
+{policy_change}
 insert into nonprofit_ingest.approved_eins(scope_version,ein,evidence_reference) values
     {scope_values};
 insert into nonprofit_ingest.capacity_measurement
     (singleton,project_ref,measured_at,database_bytes,other_disk_bytes,provisioned_bytes)
 select true,'{PROJECT_REF}',{timestamp_sql},pg_database_size(current_database()),
-       (select sum(size)::bigint from pg_ls_waldir())+{system_sql},2000000000;
+       (select sum(size)::bigint from pg_ls_waldir())+{system_sql}+{category_extra},2000000000
+{capacity_conflict};
 grant nb_loader_dev to current_user with set true;
 set local role nb_loader_dev;
 do {dollar_quote(trial, 'trial')};
@@ -197,7 +276,7 @@ select 'complete' as trial_status,
 """
     return sql, {
         "status": "prepared_for_review",
-        "filings": 3,
+        "filings": count,
         "system_evidence_supplied": observed is not None,
         "payload_bytes": len(raw.encode()),
         "database_contacted": False,

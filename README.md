@@ -42,8 +42,10 @@ docs/reference/original-product-spec-v1.md  Archived interview synthesis
 
 Current M01 checkpoint (2026-11-21): the owner applied and verified the development
 schema, disabled loader identity and initial storage policy. Mark then approved and
-ran the first three-record trial; returned counts match 3 organizations, 3 filings,
-1 run and 3 provenance links, with LOGIN false. Further imports and LOGIN activation
+ran the first three-record trial and returned completion of the additional thirty:
+33 organizations, 33 filings, 2 runs and 33 provenance links, with LOGIN false.
+Post-batch read-back confirms max_rows=30, unchanged storage safeguards and LOGIN false.
+Further imports and LOGIN activation
 are not approved; see `docs/delivery/CLOUD-TRIAL-PREFLIGHT.md` and `supabase/README.md`.
 Manual SQL migration history must be reconciled before future CLI database pushes.
 

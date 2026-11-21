@@ -2,6 +2,30 @@
 
 Place repeatable local development and data-maintenance scripts here. Document inputs, side effects, and safety.
 
+## Prepare the next local batch
+
+`prepare_next_cloud_trial.py` revalidates the same sources and creates populated-
+target SQL for the exact next thirty. Use module invocation with source, original
+sample and NEW ignored output SQL, `--system-timestamp-us`, `--system-mb` and
+`--database-mb` from the same Disk panel observation. Missing System evidence makes
+a blocked review template. Database-category bound accounts for the difference
+from SQL current-database size. Never retimestamp old evidence. The generated
+transaction proposes max_rows=30, preserving other limits; it is NOT authorized
+to run without explicit batch/policy approval. No credentials or DB connection.
+
+```powershell
+./.venv/Scripts/python.exe -m scripts.prepare_next_batch data/irs-source-sample-20261121-01 data/irs-xml-sample-20261121-01 data/NEW-next-batch
+```
+
+Uses existing checksummed sources only; no downloads or credentials. Selects ten
+new EINs per state from the January archive, excludes original trial EINs, validates
+index/XML identity/period and XML tax years 2023–2025. Writes exclusive ignored
+selection/staging/report files; a load payload is emitted only on full validation.
+Exit 0 means complete, 2 means review required, 1 means failure. Inspect partial
+outputs before retrying in a new directory. Logs contain aggregate fields only.
+This does not query existing cloud records or authorize any import/policy change.
+See `../docs/delivery/NEXT-BATCH-PREFLIGHT.md` for evidence, gates and recovery.
+
 ## Offline loader draft (`load_supabase.py`)
 
 ### First cloud trial review preparation

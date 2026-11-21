@@ -38,6 +38,42 @@ Keep this file small and current. **Chosen design preferences are not blanket au
 
 ## Owner decisions after baseline
 
+### Owner-reported second cloud trial completion — 2026-11-21
+
+Follow-up read-back at 17:29:55 UTC confirms counts 33/33/2/33, LOGIN false and
+max_rows=30 with all other numeric safeguards unchanged. Second-run baseline
+11,548,339 -> current DB 11,622,067; ingestion relations 278,528 -> 352,256:
+both observed deltas 73,728 bytes. WAL allocation unchanged at 83,886,444 bytes.
+Retain 64 KiB/filing growth floor and current reserve; this sample is insufficient
+to approve bulk scale. This supersedes pending read-back statements below.
+
+Mark returned complete: 33 organizations / 33 filings / 2 runs / 33 provenance
+links, LOGIN false, DB size 11,622,067 bytes. After the exact batch/policy approval
+request, Mark ran the SQL manually and supplied completion without a separate
+pre-execution approval message. No agent executed cloud SQL; do not invent a prior
+approval record. Result matches the reviewed thirty-additional-record transaction,
+which leaves max_rows=30. Independent storage/policy read-back remains pending.
+No further batches, login activation or milestone advance are authorized.
+
+### Post-import review and next local preparation — 2026-11-21
+
+Follow-up: Mark supplied post-import storage/count/policy evidence (17:22 UTC) and
+the Disk panel observation (17:23 UTC). Whole-DB delta is 90,112 bytes; ingestion
+relations occupy 278,528 bytes. Reviewed conservative next-batch projection is
+559,808,876 bytes including reserve/growth, below the existing 1.5 GB stop.
+Dashboard Database coverage differs from the SQL current database; preparation
+accounts for its larger bound. Thirty-record populated-target SQL is generated
+and tested locally, with exact proposed max_rows 3->30 and approval metadata only;
+other limits and LOGIN unchanged. Mark has NOT yet approved that cloud transaction
+or policy change. Measurements expire 17:38 UTC. See NEXT-BATCH-PREFLIGHT.md.
+
+Mark authorized pushing the checkpoint, reviewing storage and preparing a larger
+controlled batch. Checkpoint ca75e83 pushed. Thirty additional local filings were
+selected from the existing archive, ten/state, excluding the original three EINs;
+all local checks passed. This authorizes local preparation, not changing max_rows=3,
+new credentials, wider collection or cloud upload. Storage diagnostic and fresh
+System/provisioned evidence are pending before any exact policy/batch proposal.
+
 ### First three-filing cloud trial — 2026-11-21
 
 Mark explicitly approved the generated `first-cloud-trial-20261121-1715.sql`

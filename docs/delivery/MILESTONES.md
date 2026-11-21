@@ -12,6 +12,28 @@
 
 ## M01 — Data foundation
 
+**Post-second-trial read-back — 2026-11-21:** Counts 33/33/2/33, LOGIN false and
+max_rows=30 verified from owner output; other returned safeguards unchanged. DB and
+ingestion relation interval growth each 73,728 bytes; allocated WAL unchanged.
+Retain conservative growth floor; full-scale capacity/history coverage remains
+unverified. Earlier pending read-back notes are superseded. No gate advance.
+
+**Second cloud trial returned — 2026-11-21:** Owner reports complete with
+33 organizations / 33 filings / 2 runs / 33 links, LOGIN false, DB 11,622,067 bytes.
+Thirty additional records match expected totals. Current storage and policy
+read-back pending; further loads/login are unapproved. Neither milestone gate passed.
+
+**Post-import review — 2026-11-21:** Owner supplied storage result and 17:23 UTC
+panel evidence. Thirty-record projection ~560 MB including reserve/growth remains
+below the unchanged 1.5 GB stop. Continuation SQL passes synthetic PostgreSQL 17.12
+success, rollback and replay/baseline guards; 62 Python tests pass. Exact larger
+batch/policy approval pending. Neither milestone gate passed.
+
+**Next batch preparation — 2026-11-21:** 30 new local filings validated (10/state,
+9 tax-2025 / 21 tax-2024); 59 Python tests pass. Post-import aggregate diagnostic
+prepared, owner result pending. Cloud policy remains max_rows=3; no larger load or
+policy change approved. See NEXT-BATCH-PREFLIGHT.md. Neither milestone gate passed.
+
 **First cloud import — 2026-11-21:** Mark approved and manually ran the generated
 three-filing trial. Returned completion: 3 organizations / 3 filings / 1 run /
 3 provenance links; LOGIN false, database size 11,548,339 bytes. This supersedes
