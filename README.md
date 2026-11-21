@@ -26,10 +26,38 @@ docs/delivery/DECISIONS.md        Confirmed choices, assumptions, unresolved app
 docs/delivery/CODEX-WORKFLOW.md   Efficient agent work patterns and prompts
 docs/delivery/TEST-MATRIX.md      Requirement-to-test traceability
 docs/tasks/M01-data-foundation.md First bounded task brief
+supabase/README.md                Cloud checkpoint, approvals, diagnostics and trial limits
 docs/reference/original-product-spec-v1.md  Archived interview synthesis
 ```
 
+## Initiate the virtual environment
+1. Run ```py -3.12 -m venv .venv``` (or whatever is the stable version)
+2. Ensure it is listed on the .gitignore file.
+3. Run the below command to initiate the environment replacing your location:
+```
+(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; (& <insert your path>\.venv\Scripts\Activate.ps1)
+```
+
 ## Change discipline
+
+Current M01 checkpoint (2026-11-21): the owner applied and verified the development
+schema, disabled loader identity and initial storage policy. Mark then approved and
+ran the first three-record trial and returned completion of the additional thirty:
+33 organizations, 33 filings, 2 runs and 33 provenance links, with LOGIN false.
+Post-batch read-back confirms max_rows=30, unchanged storage safeguards and LOGIN false.
+Further imports and LOGIN activation
+are not approved; see `docs/delivery/CLOUD-TRIAL-PREFLIGHT.md` and `supabase/README.md`.
+Manual SQL migration history must be reconciled before future CLI database pushes.
+Subsequent local coverage check verifies thirteen tax-2023 examples across OH/KY/IN
+in the existing archive; see `docs/requirements/IRS_SOURCE_CONTRACT.md`. This is
+sample evidence, not complete history or approval for another upload.
+Local repeatable preparation is available through `python -m scripts.run_irs_pipeline`;
+see `scripts/README.md`. The thirteen-record 2023 package is prepared, not uploaded.
+The injected loader API has synthetic tests; live credentials/transport remain gated.
+Restricted connection operator steps are in `docs/tasks/loader-connection-setup.md`.
+Passwords use hidden user-terminal prompts; no environment secret access is authorized.
+For Gemini/Antigravity continuation, read `GEMINI.md` and
+`docs/tasks/agent-handoff.md`; this preserves the same project/approval boundaries.
 
 - Domain requirements in `docs/requirements/` are authoritative; the original spec under `reference/` is **historical context**, not a competing source of truth.
 - Changes to product scope must update the owning requirements file, then this index and any affected tests/milestones. Use a short ADR for meaningful architectural changes.

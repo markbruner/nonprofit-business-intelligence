@@ -26,7 +26,7 @@ Keep this file small and current. **Chosen design preferences are not blanket au
 
 | ID | Decision needed | Blocks | Low-risk work before answer |
 |---|---|---|---|
-| O-01 | Metro definition/year and exact Cincinnati/Cleveland **county lists**, mailing vs service geography | Real geographic extract | Synthetic fixture and configurable geography model |
+| O-01 | Metro definition/year and exact Cincinnati/Cleveland **county lists**, mailing vs service geography | County-level prospect targeting; three-state candidate registry is approved separately in D-17 | Synthetic fixture and configurable geography model |
 | O-02 | IRS return types, years, preferred extraction datasets, field mapping, validation examples, source terms | Real ingestion | Build parser contracts and tests with synthetic/source-safe sample |
 | O-03 | Calibrated screening thresholds and tolerance for false qualified prospects | Final rule release | Parameterized rules & edge-case tests |
 | O-04 | Public/professional contact sourcing, acceptable outreach practices, retention/deletion period | Live CRM content | Build synthetic CRM tests |
@@ -36,7 +36,253 @@ Keep this file small and current. **Chosen design preferences are not blanket au
 | O-08 | Subscription budget, account ownership, backup/restore owner and acceptable recovery | Paid resources / production | Local development and infra plan |
 | O-09 | Chosen mapping/geocoding library/provider, data license and price | Map live integration | Build map data contract / placeholder without fake data |
 
+## Owner decisions after baseline
+
+### Gemini / Antigravity continuation handoff — 2026-11-21
+
+Mark requested steps to continue while Codex usage resets and Gemini/Antigravity
+support. Added local GEMINI.md routing and docs/tasks/agent-handoff.md, following
+official workspace-rule discovery. Same branch/pending work and authorization
+boundaries preserved. No global settings, API keys, account login, new model
+service connection, plugin or automatic execution configured. Mark opens this
+same local checkout and chooses Gemini himself. No raw records/secrets copied.
+
+### Restricted connection setup and password handling — 2026-11-21
+
+Mark requested commit/push of the runner (1e1b764 pushed, 75 tests passed), then
+restricted connection setup. He asked whether environment variables were visible
+to the agent and agreed to hidden terminal prompts instead. Do not read environment
+passwords. Local optional driver/guarded setup/probe implementation is authorized;
+Mark handles the owner/loader password prompts himself. Artifacts target only the
+dedicated dev role and a one-hour password-valid LOGIN window, with no new grants,
+scope/capacity/data changes. Hosted setup/probe pending operator certificate/steps.
+This does not authorize an agent credential read or the thirteen-record import.
+
+### Local repeatable runner approval — 2026-11-21
+
+Mark's "Yep let's go" approves the proposed local runner, synthetic failure/retry
+tests and thirteen-record 2023 batch preparation. It does not approve credential
+use, LOGIN activation, owner settings or cloud upload. The implemented CLI prepares
+only; one-batch execution accepts an explicitly supplied restricted connection and
+reviewed plan hash. Actual package contains thirteen filings with no overlaps or
+EIN/period conflicts against the local thirty-three-record baseline; live state
+still needs rechecking. Full suite 75 tests. See PIPELINE-RUNNER-PREFLIGHT.md.
+
+### 2023 sample coverage request and local result — 2026-11-21
+
+Mark requested commit/push of current work, then 2023 coverage. Checkpoint bbb9361
+pushed with 62 tests passing. Local-only follow-up confirmed 13 actual tax-2023
+filings in the already approved January archive: OH 4 / KY 2 / IN 7, all 2023v6.0.
+91 direct field checks, index reconciliation and offline loader validation pass;
+one amended record retained explicitly. Full suite now 67 tests. No new collection,
+cloud access/upload or policy change. This resolves sample availability/core mapping
+only; statewide completeness, reporting selection and milestone gates remain open.
+
+### Owner-reported second cloud trial completion — 2026-11-21
+
+Follow-up read-back at 17:29:55 UTC confirms counts 33/33/2/33, LOGIN false and
+max_rows=30 with all other numeric safeguards unchanged. Second-run baseline
+11,548,339 -> current DB 11,622,067; ingestion relations 278,528 -> 352,256:
+both observed deltas 73,728 bytes. WAL allocation unchanged at 83,886,444 bytes.
+Retain 64 KiB/filing growth floor and current reserve; this sample is insufficient
+to approve bulk scale. This supersedes pending read-back statements below.
+
+Mark returned complete: 33 organizations / 33 filings / 2 runs / 33 provenance
+links, LOGIN false, DB size 11,622,067 bytes. After the exact batch/policy approval
+request, Mark ran the SQL manually and supplied completion without a separate
+pre-execution approval message. No agent executed cloud SQL; do not invent a prior
+approval record. Result matches the reviewed thirty-additional-record transaction,
+which leaves max_rows=30. Independent storage/policy read-back remains pending.
+No further batches, login activation or milestone advance are authorized.
+
+### Post-import review and next local preparation — 2026-11-21
+
+Follow-up: Mark supplied post-import storage/count/policy evidence (17:22 UTC) and
+the Disk panel observation (17:23 UTC). Whole-DB delta is 90,112 bytes; ingestion
+relations occupy 278,528 bytes. Reviewed conservative next-batch projection is
+559,808,876 bytes including reserve/growth, below the existing 1.5 GB stop.
+Dashboard Database coverage differs from the SQL current database; preparation
+accounts for its larger bound. Thirty-record populated-target SQL is generated
+and tested locally, with exact proposed max_rows 3->30 and approval metadata only;
+other limits and LOGIN unchanged. Mark has NOT yet approved that cloud transaction
+or policy change. Measurements expire 17:38 UTC. See NEXT-BATCH-PREFLIGHT.md.
+
+Mark authorized pushing the checkpoint, reviewing storage and preparing a larger
+controlled batch. Checkpoint ca75e83 pushed. Thirty additional local filings were
+selected from the existing archive, ten/state, excluding the original three EINs;
+all local checks passed. This authorizes local preparation, not changing max_rows=3,
+new credentials, wider collection or cloud upload. Storage diagnostic and fresh
+System/provisioned evidence are pending before any exact policy/batch proposal.
+
+### First three-filing cloud trial — 2026-11-21
+
+Mark explicitly approved the generated `first-cloud-trial-20261121-1715.sql`
+transaction in the dedicated development project, including its three public IRS
+filings and SQL Editor destination. System evidence was 167.53 MB at 17:15 UTC.
+Mark ran it manually and returned complete: 3 organizations, 3 filings, 1 import
+run, 3 provenance links, LOGIN false; database_bytes_after=11,548,339.
+This is owner-reported hosted SQL-path evidence, including the transaction's
+internal duplicate and role-restoration assertions; no agent cloud access occurred.
+It does not authorize further imports, policy widening, login activation or the
+next milestone. Do not rerun the first-trial script against the populated target.
+
+### D-16 — Disk-budget constraint — 2026-11-21
+
+Mark requested that future development explicitly avoid exceeding this project's
+included Supabase disk allowance. Initial ingestion is limited to nonprofits in
+the target regions; exact geography and source scope remain governed by O-01/O-02.
+The owning requirement is DAT-012 in `../requirements/02-data-ingestion.md`.
+
+Mark reported an existing paid plan and an 8 GB included gp3 allowance per project;
+verify the new project's actual allowance before use. The numeric stop threshold,
+headroom, batch-size estimate, and measurement freshness limit remain unresolved
+until a representative development import is measured and reviewed with Mark.
+Loader checks reduce risk but cannot guarantee total project disk usage or billing.
+Provisioned disk can remain larger than actual database usage after cleanup.
+
+This decision authorizes recording the design constraint only. It does not approve
+project provisioning, credential use, live downloads/uploads, automatic disk growth,
+additional spending, or deployment. No loader controls have been implemented or
+verified. O-08 remains open.
+
+### D-17 — Candidate registry scope and bounded loader approval — 2026-11-21
+
+Mark selected Ohio, Kentucky, and Indiana for the initial nonprofit candidate
+registry/EIN allowlist (DAT-013). This expands ingestion candidates beyond the
+metro prospecting scope; it does not redefine service geography. County choices
+remain open for prospect targeting. IRS state-address coverage and missing/other
+return types must remain explicit; full-990 XML cannot establish a complete
+three-state nonprofit registry by itself.
+
+Mark confirmed an empty, dedicated Supabase development project and explicitly
+approved local schema/loader preparation with storage checks and synthetic tests.
+No credentials, project URL, or keys are needed in these source files. This slice
+does not approve connection/credential use, migration execution against Supabase,
+live collection, uploads, spending, or deployment. O-02/O-08 and the measured
+DAT-012 operating thresholds remain open. See `SUPABASE-LOADER-PREFLIGHT.md`.
+
+Mark subsequently started Docker and authorized continuation of the local tests.
+An isolated synthetic PostgreSQL test database was used; no live/cloud operation
+or real source collection was approved by this step.
+
+### Initial filing years — 2026-11-21
+
+Mark selected tax years 2023 through 2025 inclusive for the first full-990 import
+(DAT-003). These are XML tax years, not archive publication years or years inferred
+from period end. O-02 is partially resolved; mapping, source terms, actual coverage
+and collection limits remain open. Selection does not approve live collection or
+cloud execution. The storage screenshot showed approximately 0.25 GB used on a
+2 GB provisioned disk, with an 8 GB included allowance and spend cap shown enabled.
+These rounded readings are planning context, not fresh operational measurements
+or approved capacity thresholds.
+
 ## Proposed, not yet locked
+
+### Initial storage-policy approval — 2026-11-21
+
+Mark supplied current DB bytes 11,409,075 and WAL bytes 83,886,444, measured at
+2026-11-21 14:31:47 UTC, provisioned disk 2 GB, System 167 MB and System timestamp
+1795271293373000. Interpreted as Unix microseconds, that timestamp is
+2026-11-21 14:28:13.373 UTC, consistent with the SQL reading. Do not substitute
+the time of viewing or executing SQL for those observation timestamps.
+
+Conservative unit bounds for planning: provisioned floor 2,000,000,000 bytes;
+System upper bound 168 MiB (176,160,768 bytes), covering common MB/MiB integer
+rounding interpretations. Other-disk bound with measured WAL: 260,047,212 bytes;
+combined observed/bounded baseline: 271,456,287 bytes. These are explicit bounds,
+not claims of exact provider bytes. Refresh before use; do not seed stale readings.
+
+Proposal for the initial three-record trial only: stop 1,500,000,000 bytes;
+reserve 256 MiB; max age 15 minutes; max rows 3; max payload 64 KiB; growth estimate
+max(4x payload, 64 KiB per row). Approved tax-year scope remains 2023–2025. The
+three-row admission estimate using these readings is about 540 MB INCLUDING the
+reserve, below the proposed stop and provisioned floor. This is not a provider
+quota or guarantee against other writers/WAL growth.
+
+After clarification that the three-filing limit is per trial batch, Mark explicitly
+approved `../../supabase/setup/storage_policy.sql`. Mark then returned its read-back
+with every expected value, approved_at 2026-11-21 14:42:52 UTC: policy metadata
+checkpoint PASSED. Approval covers policy only; no capacity snapshot, EIN allowlist,
+credentials, LOGIN activation or records. Do not rerun the initial INSERT script.
+Next capacity seed must retain the oldest component measurement timestamp and
+document the unit bounds; currently supplied values can expire before first load.
+
+### Disabled loader identity approval — 2026-11-21
+
+After schema verification passed, Mark explicitly approved
+`../../supabase/setup/loader_role.sql` in the same dedicated development project.
+Scope: create nb_loader_dev as NOLOGIN with no password; grant CONNECT and
+inherited nb_ingest function access without SET/admin/executor membership; set
+connection/time safeguards. No credential creation, LOGIN activation, capacity/
+scope seed or data import is included. Mark will run the script manually.
+Mark returned the expected loader-role verification: login/admin/bypass flags
+false, connection limit 1, CONNECT/inherited ingestion/function execution true,
+SET-ingest/executor membership/direct insert/budget update false. Cloud metadata
+checkpoint PASSED; no live authentication has been tested or enabled. No browser
+automation or direct agent database connection is authorized by this decision.
+
+### Schema-only cloud migration approval — 2026-11-21
+
+After read-only cloud preflight confirmed PostgreSQL 17.12, role/schema creation
+capabilities, no pipeline schema and no pipeline-role collisions, Mark explicitly
+approved the schema-only migration in the dedicated development project. Scope:
+`../../supabase/migrations/202611210001_990_loader.sql` only (seven tables, forced
+RLS, import function, indexes and two non-login roles). No loader identity setup/
+activation, passwords, scope/capacity seeding, records, data upload or deployment.
+
+Local PostgreSQL 17.12 migration/security/storage/rollback checks passed before
+approval. Chrome automation was not approved; no UI action or cloud SQL was
+executed by the agent. Mark elected to run the reviewed SQL manually in Supabase's
+SQL Editor. Mark subsequently reported seeing all seven expected tables in
+`nonprofit_ingest`. Mark then returned the read-only schema verification result:
+7 tables, 7 RLS enabled, 7 forced RLS, 2 locked non-login roles, loader function
+execution allowed, anonymous/authenticated/service-role function execution denied,
+loader direct insert/budget update denied, and hardened function metadata true.
+All reported checks match expected values. This verifies cloud metadata, not a
+live loader login, adversarial app calls or import behavior. No destructive
+rollback, login activation, configuration seed or import is approved here.
+Applied manually in SQL Editor; CLI migration-history reconciliation remains
+pending before any future `supabase db push`. Do not rerun the applied CREATE-role
+migration or silently mark migration history without review.
+
+### Supabase versus local storage; January sample — 2026-11-21
+
+Mark clarified that the storage constraint concerns Supabase, not local download
+volume, and explicitly approved the proposed local January XML sample. One
+national archive was retained locally; only three indexed regional filings were
+parsed. The successful sample and limited 2024/2025 mapping evidence are recorded
+in the source contract and test matrix. No cloud execution or upload was approved.
+Operational transfer caps remain separate from the project's disk-budget policy.
+
+### Bounded public CSV sample approval and execution — 2026-11-21
+
+After reviewing the exact four-file/175 MB plan, Mark asked to reuse the existing
+downloaders and explicitly instructed "Sounds good, proceed." This approved one
+local OH/KY/IN EO snapshot plus the 2026 publication index, with hard payload caps,
+no retries/redirects, no XML archives and no Supabase access. The safety review is
+`SOURCE-SAMPLE-PREFLIGHT.md`. The run completed within bounds (89,863,197 bytes),
+with aggregate findings in `../requirements/IRS_SOURCE_CONTRACT.md`. No further
+collection, cloud operation or milestone gate was approved.
+
+### Bounded implementation approval — 2026-11-15
+
+Mark's instruction, "Go ahead and implement the recommendations," approved the
+reviewed local downloader refactor and synthetic-response tests. Scope:
+state-specific URLs/files, request timeouts/bounded retries, temporary-file
+publication, returned provenance, and documentation. See
+`IRS-DOWNLOADER-PREFLIGHT.md` for the pre-implementation safety decision.
+No source/geography choice, live collection, credential use, Supabase write,
+paid resource, deployment, or next milestone was approved. O-01/O-02 remain open.
+
+On 2026-11-17 Mark approved the reviewed Form 990 downloader improvements:
+validated and deduplicated batch plans, separate year destinations, basic
+checks before replacing a file, download manifests, and synthetic verification.
+O-01 and O-02 remain open.
+
+On 2026-11-17 Mark selected full Form 990 XML archives as the first extractor
+source and approved local extractor implementation with synthetic tests.
+Live source mapping, collection scope, credentials, and Supabase writes
+require separate decisions. O-01 and the remaining O-02 questions stay open.
 
 - Python + SQL ETL with Next.js/TypeScript app; Postgres migrations and dedicated private GitHub repository.
 - Initial opportunity stages: identified, discovery, proposal, negotiation, won, lost, deferred.
