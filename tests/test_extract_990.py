@@ -132,6 +132,29 @@ class Extract990Tests(unittest.TestCase):
             report = extract_batch(self.manifest)["report"]
         self.assertEqual("member_too_large", report["issues"][0]["reason"])
 
+    def test_selection_skips_unrelated_xml_before_size_checks_and_parsing(self):
+        self.write_archive(
+            "selection.zip",
+            [("123_public.xml", filing()), ("456_public.xml", "invalid XML" * 1000)],
+        )
+        with patch("scripts.extract_990.MAX_MEMBER_BYTES", 1000):
+            result = extract_batch(self.manifest, selected_filing_ids={"123"})
+        self.assertEqual("complete", result["report"]["status"])
+        self.assertEqual(1, len(result["filings"]))
+        self.assertEqual(1, result["report"]["xml_skipped_unselected"])
+
+    def test_missing_selection_is_visible_and_empty_or_unsafe_selection_rejected(self):
+        self.write_archive("one.zip", [("123_public.xml", filing())])
+        result = extract_batch(self.manifest, selected_filing_ids={"123", "456"})
+        self.assertEqual("needs_review", result["report"]["status"])
+        self.assertIn(
+            {"reason": "selected_filings_missing", "count": 1},
+            result["report"]["issues"],
+        )
+        for selection in (set(), {"../123"}, {1}, {str(i) for i in range(501)}):
+            with self.assertRaises(ValueError):
+                extract_batch(self.manifest, selected_filing_ids=selection)
+
     def test_schema_shaped_amendment_location_and_checkbox(self):
         self.write_archive(
             "amendments.zip",

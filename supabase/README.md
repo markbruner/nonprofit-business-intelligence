@@ -1,13 +1,23 @@
 # Supabase — local loader preparation
 
-This directory contains **unapplied drafts**, not an initialized cloud project.
+The initial schema migration was applied manually by Mark to the dedicated cloud
+development project and its reported metadata checks passed. The disabled-loader
+identity setup was also applied by Mark and its metadata checks passed. Storage
+policy and rollback scripts remain unapplied drafts; login activation and data imports
+are not yet authorized. CLI configuration/migration history is not initialized here.
 M01: DAT-002/003/005/007/008/011/012/013 and SEC-003/006, partial only.
 
-## Design review and execution hold — 2026-11-21
+## Design review and execution status — 2026-11-21
 
-Mark requested a database-design review and star-schema alignment before creating
-tables. Do not apply the current migration. It is an ingestion/staging design,
-not an analytics star. Review identified these revisions/decisions:
+Mark requested database-design review and star-schema alignment before creating
+tables. Following revisions and local PostgreSQL 17.12 tests, Mark approved the
+schema-only migration for the dedicated cloud development project. He ran it
+manually and returned the expected `diagnostics/schema_verification.sql` results:
+counts 7/7/7/2, loader execution and function hardening true, other access flags
+false. This is metadata verification, not a live loader or app authorization test.
+This is an
+ingestion/staging design, not an analytics star. Do not apply setup/rollback files
+or load records under this approval. Review identified these revisions/decisions:
 
 - Revised: stable internal organization ID; EIN is a constrained business key
   (DAT-002). Filings reference the internal ID.
@@ -23,8 +33,9 @@ not an analytics star. Review identified these revisions/decisions:
   not an implemented or owner-approved schema change. Filing selection/amendment
   rules and dimension history need explicit decisions before curated publication.
 - PostgreSQL 16 migration, restricted-role authorization, capacity, retry and
-  recovery tests passed in an isolated local Docker container. Cloud execution
-  remains on hold for owner review, real scope evidence and measured settings.
+  recovery tests passed in isolated local Docker containers (16 and 17.12).
+  Schema-only cloud trial is approved; data loading still requires real scope
+  evidence, measured settings and separate execution approval.
 
 The offline Python loader has eight passing synthetic unit tests. SQL validation
 is separate (see below); neither establishes dimensional mart readiness.
@@ -79,6 +90,35 @@ policy-update privileges. No connection has been attempted.
 
 ## Capacity gate (no default operational values)
 
+`setup/storage_policy.sql` is the owner-approved initial three-filing policy,
+pending manual execution/read-back:
+1.5 billion byte projected-disk stop, 256 MiB reserve, 15-minute measurement age,
+3-row / 64 KiB batch limits, growth max(4x payload, 64 KiB/row), tax years 2023–2025.
+It inserts policy only and refuses to overwrite an existing row. It requires a
+reviewed privileged owner and disabled loader. No capacity/scope seed or LOGIN
+activation is bundled. `diagnostics/storage_policy_verification.sql` reads it back.
+Do not run either a policy-changing script or a load merely because it is in Git.
+
+Mark's planning snapshot supplied exact SQL DB/WAL bytes and rounded provider
+System/provisioned units. Conservative interpretation uses a 2-billion-byte
+provisioned floor and 168 MiB System upper bound for reported 167 MB. Preserve
+the underlying component timestamps: use the OLDEST, not insertion time, for a
+capacity snapshot. Unit-bound assumptions require owner approval. These readings
+must be refreshed when stale; policy setup deliberately does not seed them.
+
+Local-only calibration is in `tests/storage_calibration.sql` and refuses other
+database names. On PostgreSQL 17.12, 1,000 synthetic organizations and 3,000 filings
+added 4,505,600 schema bytes including indexes (1,501.87 bytes/filing amortized).
+This is one shape/ratio, not a production-size guarantee or approved cloud policy.
+Fixture policy values must never be copied into cloud configuration automatically.
+
+`diagnostics/storage_baseline.sql` reads current DB and on-disk WAL as the approved
+owner; it does not measure System/provisioned disk. Permission failure is not zero.
+Supabase documents that dashboard disk metrics update daily; retain the actual
+metric timestamp and do not label an old metric fresh merely because it was viewed
+now. Resolve freshness/measurement limitations before seeding capacity or enabling
+imports. Source: https://supabase.com/docs/guides/platform/database-size
+
 The migration owner must separately configure `storage_policy`,
 `capacity_measurement` and `approved_eins`. These are not caller-controlled inputs.
 The loader cannot configure its own permissions, regional scope or disk budget.
@@ -115,6 +155,20 @@ must be part of future approved connection setup.
 
 ## Validation and operation boundaries
 
+On 2026-11-21, Mark's read-only cloud metadata showed PostgreSQL 17.12. The official
+`postgres:17` local image also reported 17.12; migration, synthetic SQL suite,
+disabled-loader setup and empty-schema rollback passed under a non-superuser
+CREATEROLE database owner. This strengthens version compatibility evidence but
+does not verify Supabase's managed-role hooks or approve a cloud write.
+
+Before the first cloud write, run `diagnostics/migration_preflight.sql` read-only
+in the explicitly selected development project. Expected: role/schema creation
+capabilities true, pipeline schema absent, pipeline role count zero. Review other
+results; do not drop/reuse unexpected objects automatically. The first cloud
+migration is schema-only and requires explicit approval; budgets/scope/capacity
+remain unset, so ingestion remains blocked. Loader identity setup/activation and
+data uploads are separate operations. Database size alone is not total disk use.
+
 `tests/990_loader.sql` is a transactional synthetic integration suite for an empty
 disposable local database with Supabase's standard role names and a migration-owner
 connection. Test values are fictional and NOT approved budgets. It passed on
@@ -143,6 +197,11 @@ capture sanitized failure type/timing separately. Do not log exception text, DSN
 or payloads. This is partial DAT-011 evidence, not complete failure logging.
 
 ## Recovery
+
+The cloud schema was applied through SQL Editor, not CLI migration tracking. Before
+introducing `supabase db push`, review and reconcile migration history explicitly;
+do not rerun the applied CREATE-role migration or automatically repair the ledger.
+Future schema changes require a new versioned migration and approval.
 
 Runtime errors roll back the whole import transaction. Earlier complete runs remain.
 No conflicts overwrite stored facts; no current/amended filing is selected implicitly.

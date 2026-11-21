@@ -364,6 +364,10 @@ def _download_990_batch(
     plan: list[tuple[str, Path]],
     output_dir: Path,
     validate: Callable[[Path], None],
+    *,
+    max_bytes: int | None = None,
+    max_attempts: int = 3,
+    budget: DownloadBudget | None = None,
 ) -> list[DownloadResult]:
     if not plan:
         return []
@@ -394,19 +398,32 @@ def _download_990_batch(
         "status": "running",
         "started_at": datetime.now(timezone.utc).isoformat(),
         "files": files,
+        "max_bytes_per_file": max_bytes,
+        "max_attempts": max_attempts,
+        "payload_budget": None if budget is None else budget.limit,
     }
     _write_manifest(manifest_path, manifest)
 
     results = []
     for (url, destination), entry in zip(plan, files, strict=True):
         try:
-            result = download_file(url, destination, validate=validate)
-        except (requests.RequestException, OSError, ValueError) as error:
+            result = download_file(
+                url,
+                destination,
+                validate=validate,
+                max_bytes=max_bytes,
+                max_attempts=max_attempts,
+                budget=budget,
+            )
+        except Exception as error:
             entry.update(status="failed", error_type=type(error).__name__)
             if isinstance(error, requests.HTTPError) and error.response is not None:
                 entry["http_status"] = error.response.status_code
             manifest.update(
                 status="failed", finished_at=datetime.now(timezone.utc).isoformat()
+            )
+            manifest["payload_bytes_consumed"] = (
+                None if budget is None else budget.consumed
             )
             error.add_note(f"Batch stopped after {len(results)} completed file(s).")
             try:
@@ -422,7 +439,9 @@ def _download_990_batch(
             downloaded_at=result.downloaded_at.isoformat(),
             byte_count=result.byte_count,
             sha256=result.sha256,
+            response_headers=result.response_headers,
         )
+        manifest["payload_bytes_consumed"] = None if budget is None else budget.consumed
         if len(results) == len(plan):
             manifest.update(
                 status="complete", finished_at=datetime.now(timezone.utc).isoformat()
@@ -451,7 +470,12 @@ def download_series_990_index(
 
 
 def download_series_990_xml(
-    batches: list[tuple[int, str]], output_dir: Path
+    batches: list[tuple[int, str]],
+    output_dir: Path,
+    *,
+    max_bytes_per_file: int | None = None,
+    max_attempts: int = 3,
+    budget: DownloadBudget | None = None,
 ) -> list[DownloadResult]:
     """Download distinct (year, archive basename) pairs into a snapshot."""
     output_dir = Path(output_dir)
@@ -463,7 +487,12 @@ def download_series_990_xml(
         for year, batch_id in batches
     ]
     return _download_990_batch(
-        list(dict.fromkeys(plan)), output_dir, _validate_xml_archive
+        list(dict.fromkeys(plan)),
+        output_dir,
+        _validate_xml_archive,
+        max_bytes=max_bytes_per_file,
+        max_attempts=max_attempts,
+        budget=budget,
     )
 
 

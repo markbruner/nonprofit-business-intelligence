@@ -114,8 +114,22 @@ def _read_manifest(manifest_path: Path) -> tuple[str, list[dict]]:
     return hashlib.sha256(payload).hexdigest(), files
 
 
-def extract_batch(manifest_path: Path) -> dict:
+def extract_batch(
+    manifest_path: Path, *, selected_filing_ids: set[str] | None = None
+) -> dict:
     """Return staged filings and quality findings for one completed snapshot."""
+    if selected_filing_ids is not None:
+        if (
+            not isinstance(selected_filing_ids, set)
+            or not 1 <= len(selected_filing_ids) <= 500
+            or any(
+                not isinstance(item, str)
+                or not re.fullmatch(r"[A-Za-z0-9_-]{1,100}", item)
+                for item in selected_filing_ids
+            )
+        ):
+            raise ValueError("Expected 1 to 500 explicit safe filing IDs.")
+        selected_filing_ids = frozenset(selected_filing_ids)
     started_at = datetime.now(timezone.utc)
     manifest_path = Path(manifest_path)
     snapshot = manifest_path.parent.parent.resolve()
@@ -124,7 +138,8 @@ def extract_batch(manifest_path: Path) -> dict:
     issues = []
     source_ids = defaultdict(list)
     periods = defaultdict(list)
-    xml_seen = duplicates = rejected = unsupported = xml_bytes = 0
+    xml_seen = duplicates = rejected = unsupported = xml_bytes = skipped = 0
+    selected_found = set()
 
     for entry in archives:
         relative = Path(entry["path"])
@@ -146,6 +161,16 @@ def extract_batch(manifest_path: Path) -> dict:
                     if member.is_dir() or not member.filename.lower().endswith(".xml"):
                         continue
                     xml_seen += 1
+                    filing_id = PurePosixPath(member.filename).stem.removesuffix(
+                        "_public"
+                    )
+                    if (
+                        selected_filing_ids is not None
+                        and filing_id not in selected_filing_ids
+                    ):
+                        skipped += 1
+                        continue
+                    selected_found.add(filing_id)
                     source = {
                         "archive_path": entry["path"],
                         "archive_sha256": entry["sha256"],
@@ -182,9 +207,6 @@ def extract_batch(manifest_path: Path) -> dict:
                         else:
                             rejected += 1
                         continue
-                    filing_id = PurePosixPath(member.filename).stem.removesuffix(
-                        "_public"
-                    )
                     xml_sha256 = hashlib.sha256(payload).hexdigest()
                     key = hashlib.sha256(
                         f"{filing_id}\0{xml_sha256}".encode()
@@ -213,6 +235,13 @@ def extract_batch(manifest_path: Path) -> dict:
             for keys in groups.values()
             if len(keys) > 1
         )
+    if selected_filing_ids is not None and selected_filing_ids - selected_found:
+        issues.append(
+            {
+                "reason": "selected_filings_missing",
+                "count": len(selected_filing_ids - selected_found),
+            }
+        )
     if not filings:
         issues.append({"reason": "no_supported_filings"})
     return {
@@ -225,6 +254,10 @@ def extract_batch(manifest_path: Path) -> dict:
             "finished_at": datetime.now(timezone.utc).isoformat(),
             "archive_count": len(archives),
             "xml_seen": xml_seen,
+            "xml_skipped_unselected": skipped,
+            "selected_filing_count": (
+                None if selected_filing_ids is None else len(selected_filing_ids)
+            ),
             "staged": len(filings),
             "duplicates": duplicates,
             "rejected": rejected,
@@ -238,12 +271,29 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("manifest", type=Path)
     parser.add_argument("output", type=Path, help="New JSON staging file")
+    parser.add_argument(
+        "--selection",
+        type=Path,
+        help="JSON array of 1–500 filing IDs; ignored local file",
+    )
     args = parser.parse_args()
     temporary = None
     try:
         if args.output.exists():
             raise ValueError("Choose a new staging output path.")
-        batch = extract_batch(args.manifest)
+        selected = None
+        if args.selection is not None:
+            with args.selection.open("rb") as stream:
+                selection_bytes = stream.read(65537)
+            if len(selection_bytes) > 65536:
+                raise ValueError("Selection file exceeds 64 KiB.")
+            selection = json.loads(selection_bytes)
+            if not isinstance(selection, list) or any(
+                not isinstance(item, str) for item in selection
+            ):
+                raise ValueError("Expected a JSON array of filing IDs.")
+            selected = set(selection)
+        batch = extract_batch(args.manifest, selected_filing_ids=selected)
         with tempfile.NamedTemporaryFile(
             mode="w",
             encoding="utf-8",

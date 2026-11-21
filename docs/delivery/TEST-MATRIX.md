@@ -22,6 +22,84 @@ This is a **test plan**, not a claim that tests have been written or passed. Add
 
 ## Report actual execution per task
 
+### 2026-11-21 — initial storage-policy proposal validation
+
+- Owner supplied DB=11,409,075 bytes and WAL=83,886,444 bytes at 14:31:47 UTC;
+  System=167 MB with timestamp 1795271293373000 (interpreted as Unix microseconds,
+  14:28:13.373 UTC); provisioned=2 GB. Planning uses conservative unit/rounding
+  bounds, not fabricated precision. No capacity row was seeded from these readings.
+- Exact `setup/storage_policy.sql` and read-back query: PASS locally on PostgreSQL
+  17.12 after existing migration/disabled-role setup. Verified policy values;
+  capacity/approved-EIN/filing rows remain 0 and LOGIN remains false. Synthetic
+  isolated container only, no cloud execution. Container removed afterward.
+- Proposed values are NOT YET APPROVED: 1.5 GB stop, 256 MiB reserve, max age
+  900 seconds, 3 rows / 64 KiB payload, growth max(4x payload, 64 KiB/row), tax
+  years 2023–2025. Current readings will need refresh before the first data load.
+
+### 2026-11-21 — disabled cloud loader and local storage calibration
+
+- Mark's loader-role metadata matches expected values: NOLOGIN and no admin/bypass
+  attributes; connection limit 1; CONNECT, inherited ingestion and function access
+  true; SET/executor/direct-insert/budget-update access false. No live login tested.
+- `supabase/tests/storage_calibration.sql` ran on isolated local PostgreSQL 17.12
+  through the current guarded function: PASS, 1,000 synthetic organizations,
+  3,000 synthetic filings, 12 batches, 3,000 provenance links. All rows rolled back.
+- Table/index/schema growth: 4,505,600 bytes; database growth: 4,513,792 bytes;
+  amortized schema growth: 1,501.87 bytes per filing in this fixture. This includes
+  registry, allowlist, run and provenance overhead at this test ratio, not future
+  organization fields, every source shape, managed WAL/System or provider billing.
+- Largest synthetic admitted-batch estimate: 16,384,000 bytes for 250 rows. Its
+  operational fixture values are NOT approved cloud defaults. No cloud settings
+  or records were changed. Temporary container removed after measurement.
+- Fresh cloud DB/WAL and provider System/provisioned evidence are still needed.
+  Daily-updated dashboard metrics must not be relabeled as fresh measurements.
+
+### 2026-11-21 — owner-run cloud schema verification
+
+- Mark manually applied the approved schema-only migration, then supplied the
+  `schema_verification.sql` result. PASS (reported metadata): table/RLS/forced-RLS
+  counts 7/7/7; locked non-login roles 2; loader function execution and hardening
+  true; anonymous/authenticated/service-role execute, direct loader inserts and
+  budget updates false. No agent browser action or database connection was used.
+- This does not verify live authentication, app authorization, managed API calls,
+  cloud import behavior or capacity calibration. Loader setup/activation, policy
+  seeding and data uploads remain unapproved. Manual SQL application has not
+  reconciled CLI migration history; review before any future db push.
+
+### 2026-11-21 — cloud-version readiness check
+
+- Mark's read-only cloud metadata reports PostgreSQL 17.12 and database bytes
+  11,114,163. This is database usage only, not total provisioned/WAL/system disk.
+  No operational capacity policy was seeded from that reading.
+- Official `postgres:17` image downloaded with approval; actual local server
+  reports 17.12 (Debian 17.12-1.pgdg13+1). Migration under non-superuser CREATEROLE
+  database owner: PASS. Existing synthetic SQL suite: PASS. Disabled-loader setup
+  and empty-schema down migration under that owner: PASS. No code changes needed.
+- Networking disabled, tmpfs data; standard Supabase role names simulated. Hosted
+  managed-role behavior remains unverified. Temporary container removed afterward.
+- `supabase/diagnostics/migration_preflight.sql` is a read-only cloud metadata
+  check for role capabilities and pipeline-name collisions. Cloud results pending;
+  no migration/role creation/upload approval is inferred from metadata sharing.
+
+### 2026-11-21 — selected-member local XML validation
+
+- Full Python suite: PASS, 49 tests. New tests verify selection before XML size/
+  parse checks, missing/unsafe selection, fixed archive-budget forwarding,
+  snapshot checksums, no overwrite and review marking on index mismatch.
+- Sample runner tests initially hit Windows sandbox hard-link restrictions;
+  escalated rerun passed. Changed to Windows exclusive rename (same as extractor)
+  with POSIX hard-link publication; ordinary full suite then passed.
+- Black API format/check for six changed Python files: PASS. Whitespace: PASS
+  (line-ending warning only).
+- `./.venv/Scripts/python.exe -B -m scripts.validate_xml_sample data/irs-source-sample-20261121-01 data/irs-xml-sample-20261121-01`:
+  PASS, exit 0; 71,497,607 bytes, 3 staged, 3 index identity/period checks passed,
+  no quality findings, 12,242 members skipped. Tax years: 2024 (1), 2025 (2).
+- Direct source-to-staging field reconciliation: PASS, 15 checks. Actual schema
+  variants observed: 2024v5.0 (1), 2025v4.0 (2). No sample identities/amounts in
+  tests, chat or tracked artifacts. All source/staging artifacts remain ignored.
+- Approval covered this local sample only. No database connection, credentials,
+  Supabase write, cloud capacity calibration or full historical coverage claim.
+
 ### 2026-11-21 — approved bounded four-CSV source sample
 
 - Eight new synthetic bounds tests: PASS; all 28 downloader tests: PASS before run.

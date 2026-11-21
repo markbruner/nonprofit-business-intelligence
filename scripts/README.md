@@ -22,6 +22,32 @@ to apply. No driver, credentials or automatic pipeline runner are configured.
 
 ## IRS downloader (`download_irs.py`)
 
+### Local selected-member XML validation
+
+`validate_xml_sample.py` is a small explicit-run wrapper around the existing
+downloader, extractor and offline loader validator. It verifies the completed
+CSV snapshot checksums, selects one full-990 candidate per state in the fixed
+January batch, downloads that one archive, and parses ONLY selected filing IDs.
+Use only with named source-collection approval:
+
+```powershell
+./.venv/Scripts/python.exe -B -m scripts.validate_xml_sample data/APPROVED-csv-snapshot data/NEW-approved-xml-snapshot
+```
+
+It writes ignored local selection/staging/provenance plus an aggregate validation
+report, never a database connection. Mismatched index identity/period or out-of-scope
+tax year marks staging for review. Other archive members are skipped before reads.
+The operational 80 MB transfer cap is unrelated to Supabase storage. Existing
+snapshot/output paths are never overwritten. Windows uses exclusive rename for
+atomic publication; POSIX uses an exclusive hard link. Failed runs require review
+before a new snapshot/retry. No raw identities or amounts are printed by the runner.
+
+The extractor also accepts `selected_filing_ids` as a set (1–500 safe IDs), or
+`--selection` pointing to an ignored local JSON array of IDs. Missing requested
+members produce review findings; there is no fallback to parsing the full archive.
+The XML downloader wrapper now accepts per-file caps, max attempts and a shared
+budget, recording these operational controls in its existing manifest.
+
 M01 local downloader slice, approved by Mark on 2026-11-15. Importing the module
 does no I/O. Real IRS collection still requires the source/scope decisions in
 `docs/delivery/DECISIONS.md` (O-01/O-02); this task used synthetic HTTP responses

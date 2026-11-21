@@ -23,6 +23,10 @@
 - **DAT-012** Design ingestion to stay within the approved Supabase project disk budget. Keep raw ZIP/XML archives outside the database, load only approved regional records and needed fields, and prevent duplicate imports. Before each bounded load, check measured storage and estimated batch growth against a configurable stop threshold below the included disk allowance, reserving headroom for indexes, transaction logs, system overhead, and other writes. Missing or stale capacity measurements must stop the load for review. Calibrate the threshold with a representative import before bulk loading; do not assume a paid plan prevents overages. Track actual database usage separately from provisioned disk, which determines disk billing. Never automatically increase disk capacity or authorize overage charges.
 - **DAT-013** The initial organization candidate registry and EIN allowlist cover Ohio, Kentucky, and Indiana, as selected by Mark on 2026-11-21. Build the versioned allowlist from the approved IRS organization source snapshots for these states; retain snapshot provenance and report source coverage limits. State-based IRS address selection represents mailing/HQ geography, not demonstrated service area. County-level prospect targeting remains separate. Include source-listed organizations regardless of whether full Form 990 XML is available; missing filings and other return types are coverage gaps, not grounds to silently remove an organization. The first XML loader supports full Form 990 only. State selection alone does not approve live collection or establish source years, field mapping, or operational limits.
 
+Mark clarified on 2026-11-21 that DAT-012 is a **Supabase disk-budget constraint**.
+Ignored local archives do not consume that project's disk allowance. Per-download
+operational caps are separate safeguards, not a business limit on local source size.
+
 ## Expected entities (logical, not mandated DDL)
 
 `organizations`, `organization_aliases` (if needed), `organization_filings`, `organization_financials`, `import_runs`, `source_references`; see architectural choices in 08 and the original reference spec.

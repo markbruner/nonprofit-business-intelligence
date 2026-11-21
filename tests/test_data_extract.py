@@ -219,6 +219,30 @@ class BoundedDownloadTests(unittest.TestCase):
         self.assertFalse((snapshot / "eo_oh.csv").exists())
         self.http.assert_called_once()
 
+    def test_xml_wrapper_forwards_bounds_and_records_consumed_budget(self):
+        memory = BytesIO()
+        with ZipFile(memory, "w") as archive:
+            archive.writestr("synthetic.xml", "<Return />")
+        body = memory.getvalue()
+        self.http.return_value = bounded_response(
+            body, {"Content-Length": str(len(body))}
+        )
+        budget = DownloadBudget(len(body))
+        output = self.root / "xml"
+        download_series_990_xml(
+            [(2026, "synthetic")],
+            output,
+            max_bytes_per_file=len(body),
+            max_attempts=1,
+            budget=budget,
+        )
+        (manifest_path,) = (output / "manifests").glob("*.json")
+        manifest = json.loads(manifest_path.read_text())
+        self.assertEqual("complete", manifest["status"])
+        self.assertEqual(len(body), manifest["payload_bytes_consumed"])
+        self.assertEqual(1, manifest["max_attempts"])
+        self.assertEqual(len(body), manifest["max_bytes_per_file"])
+
 
 class DownloadTests(unittest.TestCase):
     def setUp(self):

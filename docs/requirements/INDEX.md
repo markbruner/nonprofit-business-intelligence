@@ -37,6 +37,14 @@
 
 ## Stop/go gates and outstanding choices
 
+2026-11-21: Owner-run cloud schema metadata verification matches expected counts,
+RLS, role flags and grants. This is a schema-only checkpoint; cloud imports,
+capacity calibration and live loader authentication remain unverified/unapproved.
+
+2026-11-21: Approved local selected-member XML validation passed for three records
+(2024 and 2025 variants). See source contract/test matrix. This strengthens partial
+DAT-003/007/008 evidence; full 2023–2025 coverage and cloud capacity remain open.
+
 2026-11-21: Approved bounded OH/KY/IN EO plus 2026-index sample completed locally;
 actual headers and aggregate scope counts are recorded in `IRS_SOURCE_CONTRACT.md`.
 This supplies partial DAT-001/006/007/011/013 evidence, not XML tax-year coverage.

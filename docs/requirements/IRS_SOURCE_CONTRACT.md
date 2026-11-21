@@ -65,7 +65,34 @@ lists 2025 schema versions, but an equivalent public redacted package was not fo
 Do not claim 2025 field mapping or actual filing availability is verified. Before
 live use, obtain appropriate public schema/sample evidence for each selected
 version/year, reconcile IDs and amounts, and agree on download volume/terms.
-No IRS sign-in, SOR mailbox access or bulk download is authorized by this review.
+That documentation-only phase did not authorize IRS sign-in, SOR mailbox access,
+or bulk download. Subsequent explicit sample approvals are recorded below.
+
+### Local January XML sample — 2026-11-21
+
+Mark explicitly approved the January sample after clarifying that local storage
+is separate from the Supabase allowance. Downloaded one official
+`2026_TEOS_XML_01A.zip` (71,497,607 bytes) into ignored
+`data/irs-xml-sample-20261121-01/`, with one attempt and an 80 MB operational cap.
+The existing downloader records source/hash/time/size/header provenance.
+
+Selected one candidate per state from the completed local index, ordered by latest
+tax-period end then object ID. The extractor skipped 12,242 unselected XML members
+BEFORE decompression/parsing. Three records staged without review findings, and
+all three matched the index EIN and tax period. Offline loader preparation passed.
+
+Actual XML variants: one tax-year-2024 filing using `2024v5.0`, and two
+tax-year-2025 filings using `2025v4.0`. Independent direct-source checks of EIN,
+tax year, period end, revenue and expenses passed for all three (15 comparisons);
+none of those sample fields was missing. No identities, names, addresses or amounts
+were copied into chat, tests or tracked documentation.
+
+This supplies limited actual-XML evidence for those core mappings/variants; it is
+NOT full XSD validation, a test of every amendment variant, proof of statewide
+completeness or a 2023 sample. The earlier statement that 2025 lacked evidence
+describes the documentation-only phase, now supplemented by these two filings.
+Raw ZIP, local selection, staging and aggregate report remain ignored. No
+credentials, database connections or Supabase uploads were used.
 
 ### Endpoint metadata and approved source sample
 

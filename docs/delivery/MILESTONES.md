@@ -12,6 +12,25 @@
 
 ## M01 — Data foundation
 
+**Loader permission/storage checkpoint — 2026-11-21:** Owner-returned disabled
+loader metadata matches the reviewed permissions; no login is enabled. A local
+synthetic storage benchmark passed (3,000 filings / 1,000 organizations, ~4.5 MB
+schema/index growth). Cloud WAL/System/provisioned measurements and approved
+operating thresholds remain pending; no cloud policy/data seed is authorized.
+
+**Cloud schema checkpoint — 2026-11-21:** Mark applied the approved schema-only
+migration manually. His returned verification matches all expected table, forced
+RLS, role-lockdown and function ACL/hardening metadata. No live loader/import or
+capacity calibration is verified. Scope/budget configuration, login activation
+and uploads still require separate approval. Neither milestone gate is passed.
+
+**Local XML validation — 2026-11-21:** Explicitly approved January sample passed:
+one local archive, three selected regional records, index and direct-source field
+checks, and offline loader-contract validation. Actual variants include two 2025
+and one 2024 filing; 2023/historical coverage remains open. All 49 Python tests pass.
+No Supabase changes. Fresh capacity measurements, approved policy settings and a
+separate cloud-execution approval are required before a data load.
+
 **Bounded source update — 2026-11-21:** Mark approved one fixed four-CSV local
 sample. Existing downloader gained tested payload caps and one-attempt support;
 the run completed at 89,863,197 bytes with source manifests and aggregate checks.

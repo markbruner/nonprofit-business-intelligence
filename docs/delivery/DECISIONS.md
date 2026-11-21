@@ -90,6 +90,81 @@ or approved capacity thresholds.
 
 ## Proposed, not yet locked
 
+### Initial storage-policy approval — 2026-11-21
+
+Mark supplied current DB bytes 11,409,075 and WAL bytes 83,886,444, measured at
+2026-11-21 14:31:47 UTC, provisioned disk 2 GB, System 167 MB and System timestamp
+1795271293373000. Interpreted as Unix microseconds, that timestamp is
+2026-11-21 14:28:13.373 UTC, consistent with the SQL reading. Do not substitute
+the time of viewing or executing SQL for those observation timestamps.
+
+Conservative unit bounds for planning: provisioned floor 2,000,000,000 bytes;
+System upper bound 168 MiB (176,160,768 bytes), covering common MB/MiB integer
+rounding interpretations. Other-disk bound with measured WAL: 260,047,212 bytes;
+combined observed/bounded baseline: 271,456,287 bytes. These are explicit bounds,
+not claims of exact provider bytes. Refresh before use; do not seed stale readings.
+
+Proposal for the initial three-record trial only: stop 1,500,000,000 bytes;
+reserve 256 MiB; max age 15 minutes; max rows 3; max payload 64 KiB; growth estimate
+max(4x payload, 64 KiB per row). Approved tax-year scope remains 2023–2025. The
+three-row admission estimate using these readings is about 540 MB INCLUDING the
+reserve, below the proposed stop and provisioned floor. This is not a provider
+quota or guarantee against other writers/WAL growth.
+
+After clarification that the three-filing limit is per trial batch, Mark explicitly
+approved `../../supabase/setup/storage_policy.sql`. Owner execution/read-back is
+PENDING. Approval covers policy only; no capacity snapshot, EIN allowlist,
+credentials, LOGIN activation or records. Mark will run the SQL manually.
+Next capacity seed must retain the oldest component measurement timestamp and
+document the unit bounds; currently supplied values can expire before first load.
+
+### Disabled loader identity approval — 2026-11-21
+
+After schema verification passed, Mark explicitly approved
+`../../supabase/setup/loader_role.sql` in the same dedicated development project.
+Scope: create nb_loader_dev as NOLOGIN with no password; grant CONNECT and
+inherited nb_ingest function access without SET/admin/executor membership; set
+connection/time safeguards. No credential creation, LOGIN activation, capacity/
+scope seed or data import is included. Mark will run the script manually.
+Mark returned the expected loader-role verification: login/admin/bypass flags
+false, connection limit 1, CONNECT/inherited ingestion/function execution true,
+SET-ingest/executor membership/direct insert/budget update false. Cloud metadata
+checkpoint PASSED; no live authentication has been tested or enabled. No browser
+automation or direct agent database connection is authorized by this decision.
+
+### Schema-only cloud migration approval — 2026-11-21
+
+After read-only cloud preflight confirmed PostgreSQL 17.12, role/schema creation
+capabilities, no pipeline schema and no pipeline-role collisions, Mark explicitly
+approved the schema-only migration in the dedicated development project. Scope:
+`../../supabase/migrations/202611210001_990_loader.sql` only (seven tables, forced
+RLS, import function, indexes and two non-login roles). No loader identity setup/
+activation, passwords, scope/capacity seeding, records, data upload or deployment.
+
+Local PostgreSQL 17.12 migration/security/storage/rollback checks passed before
+approval. Chrome automation was not approved; no UI action or cloud SQL was
+executed by the agent. Mark elected to run the reviewed SQL manually in Supabase's
+SQL Editor. Mark subsequently reported seeing all seven expected tables in
+`nonprofit_ingest`. Mark then returned the read-only schema verification result:
+7 tables, 7 RLS enabled, 7 forced RLS, 2 locked non-login roles, loader function
+execution allowed, anonymous/authenticated/service-role function execution denied,
+loader direct insert/budget update denied, and hardened function metadata true.
+All reported checks match expected values. This verifies cloud metadata, not a
+live loader login, adversarial app calls or import behavior. No destructive
+rollback, login activation, configuration seed or import is approved here.
+Applied manually in SQL Editor; CLI migration-history reconciliation remains
+pending before any future `supabase db push`. Do not rerun the applied CREATE-role
+migration or silently mark migration history without review.
+
+### Supabase versus local storage; January sample — 2026-11-21
+
+Mark clarified that the storage constraint concerns Supabase, not local download
+volume, and explicitly approved the proposed local January XML sample. One
+national archive was retained locally; only three indexed regional filings were
+parsed. The successful sample and limited 2024/2025 mapping evidence are recorded
+in the source contract and test matrix. No cloud execution or upload was approved.
+Operational transfer caps remain separate from the project's disk-budget policy.
+
 ### Bounded public CSV sample approval and execution — 2026-11-21
 
 After reviewing the exact four-file/175 MB plan, Mark asked to reuse the existing
