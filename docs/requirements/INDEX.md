@@ -37,6 +37,12 @@
 
 ## Stop/go gates and outstanding choices
 
+2026-11-21 connection checkpoint: operator-run hidden password helper, guarded
+temporary LOGIN and fixed-endpoint read-only TLS probe prepared. 82 Python tests
+and isolated SQL ACL/activation/recovery pass. Public CA and hosted operator
+execution pending; no agent credential read or upload. Partial SEC-003/006,
+DAT-012/ARC-005 evidence; see ../tasks/loader-connection-setup.md.
+
 2026-11-21 runner checkpoint: one local command prepares tax-2023 reviewed batches
 of at most thirty records with payload bounds; explicit injected execution API
 reuses server capacity/scope gates and never retries automatically. 75 tests pass;

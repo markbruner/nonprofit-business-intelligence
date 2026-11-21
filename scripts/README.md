@@ -2,6 +2,17 @@
 
 Place repeatable local development and data-maintenance scripts here. Document inputs, side effects, and safety.
 
+## Restricted connection setup (operator-run)
+
+Follow `../docs/tasks/loader-connection-setup.md`: download the public project CA,
+run `set_loader_password.ps1` in your own interactive terminal, review/apply the
+guarded one-hour LOGIN script, then run `python -m scripts.check_loader_connection
+--ca-cert ./data/connection/supabase-ca.crt`. Commands accept no password argument,
+environment variable or secret file. The helper uses cached PostgreSQL 17 psql's
+hidden password commands; the probe pins the dev pooler/role with verify-full,
+read-only metadata and no import. Driver is optional: `uv sync --extra loader`.
+Never run the password prompt through agent tools; share only sanitized output.
+
 ## Repeatable 2023 pipeline preparation
 
 ```powershell

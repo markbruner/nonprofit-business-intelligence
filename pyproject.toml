@@ -13,3 +13,6 @@ dependencies = [
     "pytest",
     "black",
 ]
+
+[project.optional-dependencies]
+loader = ["psycopg[binary]==3.3.9"]

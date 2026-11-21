@@ -38,6 +38,26 @@ Keep this file small and current. **Chosen design preferences are not blanket au
 
 ## Owner decisions after baseline
 
+### Gemini / Antigravity continuation handoff — 2026-11-21
+
+Mark requested steps to continue while Codex usage resets and Gemini/Antigravity
+support. Added local GEMINI.md routing and docs/tasks/agent-handoff.md, following
+official workspace-rule discovery. Same branch/pending work and authorization
+boundaries preserved. No global settings, API keys, account login, new model
+service connection, plugin or automatic execution configured. Mark opens this
+same local checkout and chooses Gemini himself. No raw records/secrets copied.
+
+### Restricted connection setup and password handling — 2026-11-21
+
+Mark requested commit/push of the runner (1e1b764 pushed, 75 tests passed), then
+restricted connection setup. He asked whether environment variables were visible
+to the agent and agreed to hidden terminal prompts instead. Do not read environment
+passwords. Local optional driver/guarded setup/probe implementation is authorized;
+Mark handles the owner/loader password prompts himself. Artifacts target only the
+dedicated dev role and a one-hour password-valid LOGIN window, with no new grants,
+scope/capacity/data changes. Hosted setup/probe pending operator certificate/steps.
+This does not authorize an agent credential read or the thirteen-record import.
+
 ### Local repeatable runner approval — 2026-11-21
 
 Mark's "Yep let's go" approves the proposed local runner, synthetic failure/retry

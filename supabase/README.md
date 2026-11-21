@@ -198,6 +198,13 @@ or payloads. This is partial DAT-011 evidence, not complete failure logging.
 
 ## Post-import storage and next batch
 
+Restricted connection setup artifacts are now prepared/tested locally. Follow
+`../docs/tasks/loader-connection-setup.md` for the user-run hidden password helper,
+`setup/loader_login_activation.sql` one-hour window and read-only Python probe.
+No live password/TLS test or LOGIN activation has occurred by the agent. New SQL
+adds no grants and changes no disk settings/data; recovery is NOLOGIN for new
+connections. Mark chose hidden prompts, not environment secrets. No import included.
+
 Current local follow-up: `scripts/run_irs_pipeline.py` prepares the thirteen verified
 2023 filings as one package and exposes a tested injected-connection API that calls
 the existing import function. It creates no connection or credential and does not

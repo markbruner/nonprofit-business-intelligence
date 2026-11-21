@@ -22,6 +22,19 @@ This is a **test plan**, not a claim that tests have been written or passed. Add
 
 ## Report actual execution per task
 
+### 2026-11-21 — restricted connection setup preparation
+
+- Seven synthetic probe tests pass; full Python suite 82 passed. Covers pinned
+  host/role/verify-full/read-only settings, missing CA, safe metadata success and
+  rollback/close, TLS rejection, wrong role/expiry/privileges, noninteractive prompt
+  rejection and sanitized one-attempt driver failure. PowerShell helper parses.
+- Isolated PostgreSQL 17.12: extra direct SELECT prevents LOGIN; expected ACLs allow
+  one-hour activation; actual restricted-role probe SQL returns expected read-only
+  metadata; NOLOGIN recovery passes; zero import runs. Fixture uses socket trust,
+  so no hosted password/TLS authentication claim. Container removed after inspection.
+- Optional psycopg[binary] 3.3.9 installed and locked. No real credentials read or
+  Supabase connection opened by the agent; operator certificate/setup/probe pending.
+
 ### 2026-11-21 — repeatable preparation and injected loader runner
 
 - Full Python suite 75 passed. Eight new synthetic tests cover stable thirty/one

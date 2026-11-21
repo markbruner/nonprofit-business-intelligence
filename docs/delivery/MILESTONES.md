@@ -12,6 +12,11 @@
 
 ## M01 — Data foundation
 
+**Restricted connection preparation — 2026-11-21:** Hidden operator-password helper,
+guarded one-hour LOGIN and read-only probe prepared. Optional driver installed;
+82 tests and local activation/ACL/recovery checks pass. User CA and hosted probe
+remain pending. No agent credentials/cloud use or next import. No milestone advance.
+
 **Repeatable local runner — 2026-11-21:** Local selection/extraction/validation/
 bounded packaging implemented; 75 tests pass, including injected execution failure
 and resubmission behavior. Thirteen 2023 records prepared as one reviewable package.
