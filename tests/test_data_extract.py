@@ -11,7 +11,7 @@ from zipfile import ZipFile
 
 import requests
 
-from scripts.data_extract import (
+from scripts.download_irs import (
     build_eo_url,
     download_eo_files,
     download_file,
