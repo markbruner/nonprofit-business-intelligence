@@ -74,9 +74,13 @@ source snapshots or cloud records; no automatic package uninstall.
   after revocation activation passes; actual nb_loader_dev session executes probe
   SQL read-only with expected metadata; NOLOGIN recovery passes, import count zero.
   This does not validate hosted TLS/password auth (local fixture uses socket trust).
-- Local test container inspected and removed. Public CA is still pending user
-  download; hosted setup/probe remain pending. No synthetic password fixture is a
-  real credential. Existing 33 hosted filings remain untouched by the agent.
+- Local test container inspected and removed. User downloaded public CA and executed
+  operator setup. Hosted probe executed successfully: `restricted_connection_verified`,
+  `tls_in_use=true`, `sslmode=verify-full`, `password_auth_used=true`, `records_imported=0`.
+  Metadata verified role `nb_loader_dev`, `read_only=true`, `can_execute=true`, and all 13
+  administrative, table-access, and membership checks `false`. Role subsequently returned
+  to `NOLOGIN`. Zero records imported. Live thirteen-record import remains gated.
+- Existing 33 hosted filings remain untouched by the agent.
 
 ## Sources, unresolved risks and next safest step
 

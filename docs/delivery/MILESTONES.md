@@ -12,6 +12,24 @@
 
 ## M01 — Data foundation
 
+**Tax-2023 13-filing sample batch loaded — 2026-11-21:** Operator seeded scope `oh-ky-in-tax2023-sample-v1`
+and stamped fresh capacity evidence, then executed the reviewed package (`data/irs-tax2023-pipeline-20261121-02/`,
+plan digest `4ace4f3b312512916af5b498c9d7e3d8eed5e1141a905e572cb02f4be0f36615`) via the restricted loader CLI
+(`scripts.load_prepared_batch`). The batch completed cleanly: status `complete`, `batch_id: batch-001`, 13 filings,
+`run_key: 66f4fb686d4288996447957b7824d24fcbd7edb87631541c0c53da485e12933f`. Verified post-batch read-back
+confirmed 46 organizations, 46 filings, 3 import runs, 46 provenance links, `database_bytes: 11,630,259`,
+`ingest_total_bytes: 352,256`, `wal_bytes: 100,663,660`, and `login_enabled: false`. Full test suite 87 tests pass.
+Neither milestone gate passed; further imports remain unapproved.
+
+**Restricted connection verified — 2026-11-21:** Operator ran guarded password setup,
+one-hour LOGIN activation, and the restricted probe (`scripts/check_loader_connection.py`).
+Returned metadata verified: status `restricted_connection_verified`, TLS in use (`verify-full`),
+password auth in use, database `postgres`, role `nb_loader_dev`, login enabled, password valid,
+connection limit 1, read-only transaction confirmed, inherits `nb_ingest`, execute privilege
+on `nonprofit_ingest.load_990(jsonb)` verified, all 13 direct table/admin/create/SET access flags
+false, and records imported 0. Operator recovered role to NOLOGIN. 82 Python tests pass. Neither
+milestone gate passed; live thirteen-record import remains unapproved.
+
 **Restricted connection preparation — 2026-11-21:** Hidden operator-password helper,
 guarded one-hour LOGIN and read-only probe prepared. Optional driver installed;
 82 tests and local activation/ACL/recovery checks pass. User CA and hosted probe

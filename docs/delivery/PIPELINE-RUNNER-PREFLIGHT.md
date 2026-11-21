@@ -64,6 +64,17 @@ Local rollback: revert new runner/refactor/docs and remove only its ignored new
 package after review. No cloud rollback is needed for this task. Future successful
 cloud deletion requires separate approval and restore planning.
 
+## Completed 13-record batch execution — 2026-11-21
+
+Owner executed `prepare_tax2023_sample_scope.sql` in dev SQL Editor, seeding scope
+`oh-ky-in-tax2023-sample-v1` (13 EINs) and fresh capacity measurement, and opening a 1-hour
+loader login window. Operator then executed `batch-001` via `scripts.load_prepared_batch`
+with verified plan digest `4ace4f3b312512916af5b498c9d7e3d8eed5e1141a905e572cb02f4be0f36615`.
+Database committed receipt: status `complete`, 13 filings, `run_key: 66f4fb686d4288996447957b7824d24fcbd7edb87631541c0c53da485e12933f`.
+Post-import read-back verified: 46 organizations, 46 filings, 3 import runs, 46 provenance
+links, `database_bytes: 11,630,259`, `ingest_total_bytes: 352,256`, `wal_bytes: 100,663,660`,
+and `login_enabled: false`. No additional downloads or uploads are authorized.
+
 ## Tests and evaluation evidence
 
 Eight new synthetic tests: deterministic thirty/one splitting, payload-based
