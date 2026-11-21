@@ -30,7 +30,7 @@ $dockerArgs = @(
     '--env', 'PSQL_HISTORY=/dev/null', 'postgres:17',
     'psql', '-X', '-W', '--set=ON_ERROR_STOP=1', '--single-transaction',
     $connection, '-c', $guard, '-c', "set password_encryption='scram-sha-256';",
-    '-c', 'password nb_loader_dev'
+    '-c', '\password nb_loader_dev'
 )
 Write-Host 'Enter the existing dev database owner password, then the new loader password twice.'
 & docker @dockerArgs
