@@ -9,7 +9,7 @@
 | File | Domain | IDs | Timing |
 |---|---|---|---|
 | [01-product-scope.md](01-product-scope.md) | Goals, scope, business rules | PRD-001–PRD-009 | M01–M04 |
-| [02-data-ingestion.md](02-data-ingestion.md) | Public sources, identity, ETL, provenance | DAT-001–DAT-011 | M01 |
+| [02-data-ingestion.md](02-data-ingestion.md) | Public sources, identity, ETL, provenance, disk budget | DAT-001–DAT-012 | M01 |
 | [03-financial-screening.md](03-financial-screening.md) | Measures, rules, review, priority | SCR-001–SCR-010 | M01 |
 | [04-profiles-and-evidence.md](04-profiles-and-evidence.md) | Profiles, impact/funding evidence | RES-001–RES-009 | M02–M03 |
 | [05-crm-and-opportunities.md](05-crm-and-opportunities.md) | Relationships, contacts, tasks, pipeline | CRM-001–CRM-012 | M03 |
@@ -36,6 +36,11 @@
 5. **Client/project/financial operations:** longer-term product vision, not initial release implementation.
 
 ## Stop/go gates and outstanding choices
+
+2026-11-21: Mark established a disk-budget constraint for future Supabase ingestion
+(DAT-012; D-16 in the decision register). Capacity checks, stop thresholds, and
+regional filtering are required design work, not implemented controls. Numeric
+headroom and batch limits require representative measurements before bulk loading.
 
 2026-11-15: The approved M01 local-downloader slice has offline test evidence
 for portions of DAT-001, DAT-006, DAT-007, and DAT-011. See

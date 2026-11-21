@@ -15,6 +15,7 @@
 - **DAT-009** Use explicit, versioned metro/county inclusion lists configured in data, not hard-coded in application business logic. Record whether an address is mailing/HQ rather than service geography.
 - **DAT-010** Geocode only to support approved map functionality. Record geocoding provider/precision/date and distinguish approximate addresses; do not imply the mapped point represents program reach.
 - **DAT-011** Each import run records status, counts, failures, timings, and source version. A failed run must not silently replace trustworthy curated data.
+- **DAT-012** Design ingestion to stay within the approved Supabase project disk budget. Keep raw ZIP/XML archives outside the database, load only approved regional records and needed fields, and prevent duplicate imports. Before each bounded load, check measured storage and estimated batch growth against a configurable stop threshold below the included disk allowance, reserving headroom for indexes, transaction logs, system overhead, and other writes. Missing or stale capacity measurements must stop the load for review. Calibrate the threshold with a representative import before bulk loading; do not assume a paid plan prevents overages. Track actual database usage separately from provisioned disk, which determines disk billing. Never automatically increase disk capacity or authorize overage charges.
 
 ## Expected entities (logical, not mandated DDL)
 

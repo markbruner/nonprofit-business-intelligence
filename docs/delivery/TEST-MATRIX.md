@@ -6,6 +6,7 @@ This is a **test plan**, not a claim that tests have been written or passed. Add
 |---|---|---|---|
 | M01 | DAT-002–DAT-005, DAT-007–DAT-008 | Idempotent import; EIN alias/collision; source tax periods; amendment selection; missing-vs-zero handling | NOT RUN |
 | M01 | DAT-001, DAT-006, DAT-009–DAT-011 | Source metadata, manual import validation, county config, geocoding provenance, failed-run integrity | NOT RUN |
+| M01 | DAT-012 | Below-budget batch proceeds; threshold-crossing batch stops before writes; missing/stale capacity fails closed; rerun adds no duplicates; measurements include indexes and overhead; actual usage and provisioned disk reported separately; no automatic disk expansion | NOT RUN |
 | M01 | SCR-001–SCR-005 | Revenue band, surplus, margin guard, trend gaps, mission corrections | NOT RUN |
 | M01 | SCR-006–SCR-010 | Versioned deterministic rules, reason codes, override audit, no pipeline contamination | NOT RUN |
 | M02 | SEC-001–SEC-007, SEC-009, SEC-011 | Signed-out/manager/admin/inactive DB+API authorization and secret exposure tests | NOT RUN |

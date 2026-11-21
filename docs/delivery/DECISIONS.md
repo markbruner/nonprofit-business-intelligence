@@ -36,6 +36,27 @@ Keep this file small and current. **Chosen design preferences are not blanket au
 | O-08 | Subscription budget, account ownership, backup/restore owner and acceptable recovery | Paid resources / production | Local development and infra plan |
 | O-09 | Chosen mapping/geocoding library/provider, data license and price | Map live integration | Build map data contract / placeholder without fake data |
 
+## Owner decisions after baseline
+
+### D-16 — Disk-budget constraint — 2026-11-21
+
+Mark requested that future development explicitly avoid exceeding this project's
+included Supabase disk allowance. Initial ingestion is limited to nonprofits in
+the target regions; exact geography and source scope remain governed by O-01/O-02.
+The owning requirement is DAT-012 in `../requirements/02-data-ingestion.md`.
+
+Mark reported an existing paid plan and an 8 GB included gp3 allowance per project;
+verify the new project's actual allowance before use. The numeric stop threshold,
+headroom, batch-size estimate, and measurement freshness limit remain unresolved
+until a representative development import is measured and reviewed with Mark.
+Loader checks reduce risk but cannot guarantee total project disk usage or billing.
+Provisioned disk can remain larger than actual database usage after cleanup.
+
+This decision authorizes recording the design constraint only. It does not approve
+project provisioning, credential use, live downloads/uploads, automatic disk growth,
+additional spending, or deployment. No loader controls have been implemented or
+verified. O-08 remains open.
+
 ## Proposed, not yet locked
 
 ### Bounded implementation approval — 2026-11-15
