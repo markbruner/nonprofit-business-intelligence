@@ -12,6 +12,27 @@
 
 ## M01 — Data foundation
 
+**Bounded task update — 2026-11-15:** Mark approved the local IRS downloader
+refactor and synthetic tests only. Implemented URL selection, sequential batch
+downloads, safe temporary-file publication, bounded retries, and returned
+provenance. All 15 downloader tests and 8 existing API/contract tests passed;
+Black passed for the two changed Python files. See `TEST-MATRIX.md` and
+`IRS-DOWNLOADER-PREFLIGHT.md`. This is partial technical evidence, not an M01
+gate pass. Broader M01 implementation, real collection, Supabase loading, and
+advancement to M02 remain unapproved.
+
+**Bounded task update — 2026-11-17:** The owner approved the reviewed Form 990
+downloader improvements for local implementation. Form 990 batches now
+validate the download plan and basic artifact structure, preserve prior files
+when validation fails, and persist a manifest for each run. See
+`TEST-MATRIX.md` for synthetic test evidence. The M01 gate remains open.
+
+**Bounded task update — 2026-11-17:** The local Form 990 extractor stages
+filings and quality findings from a completed archive manifest. Synthetic
+tests verified stable filing keys, visible conflicts, provenance, and local
+publication behavior. Live source reconciliation and the Supabase loader
+remain future tasks. See `TEST-MATRIX.md`.
+
 **Scope:** Reproducible source imports, canonical registry, filing/financial history, transparent financial rules, provenance and quality report. Initial local-only development using synthetic fixtures can proceed as a proposed task after owner approval. Real extract awaits county/source selection.
 
 **Technical gate:**

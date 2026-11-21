@@ -38,6 +38,26 @@ Keep this file small and current. **Chosen design preferences are not blanket au
 
 ## Proposed, not yet locked
 
+### Bounded implementation approval — 2026-11-15
+
+Mark's instruction, "Go ahead and implement the recommendations," approved the
+reviewed local downloader refactor and synthetic-response tests. Scope:
+state-specific URLs/files, request timeouts/bounded retries, temporary-file
+publication, returned provenance, and documentation. See
+`IRS-DOWNLOADER-PREFLIGHT.md` for the pre-implementation safety decision.
+No source/geography choice, live collection, credential use, Supabase write,
+paid resource, deployment, or next milestone was approved. O-01/O-02 remain open.
+
+On 2026-11-17 Mark approved the reviewed Form 990 downloader improvements:
+validated and deduplicated batch plans, separate year destinations, basic
+checks before replacing a file, download manifests, and synthetic verification.
+O-01 and O-02 remain open.
+
+On 2026-11-17 Mark selected full Form 990 XML archives as the first extractor
+source and approved local extractor implementation with synthetic tests.
+Live source mapping, collection scope, credentials, and Supabase writes
+require separate decisions. O-01 and the remaining O-02 questions stay open.
+
 - Python + SQL ETL with Next.js/TypeScript app; Postgres migrations and dedicated private GitHub repository.
 - Initial opportunity stages: identified, discovery, proposal, negotiation, won, lost, deferred.
 - Three financial-screen labels: priority, needs_review, lower_priority.

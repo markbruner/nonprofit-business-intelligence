@@ -1,0 +1,15 @@
+[project]
+name = "nonprofit-business-intelligence"
+version = "0.1.0"
+description = "This repo will assist in researching nonprofits and tracking our relationship with them for our nonprofit consulting business."
+readme = "README.md"
+requires-python = ">=3.12"
+
+dependencies = [
+    "requests==2.32.2",
+    "pandas==3.1.1",
+    "numpy==2.5",
+    "uv",
+    "pytest",
+    "black",
+]

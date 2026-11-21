@@ -20,6 +20,55 @@ This is a **test plan**, not a claim that tests have been written or passed. Add
 
 ## Report actual execution per task
 
+### 2026-11-17 — local Form 990 XML extractor
+
+- Partial coverage for DAT-003, DAT-005, DAT-007, DAT-008, and DAT-011.
+- `./.venv/Scripts/python.exe -B -m unittest discover -s tests -v` passed
+  26 tests, including six extractor cases. Synthetic ZIPs verified the
+  mapping, zero and null, repeatable keys, conflicting observations,
+  malformed and unsupported records, member size limits, manifest integrity,
+  and safe CLI publication.
+- Black passed separately for the extractor and its test file.
+- Live IRS reconciliation and database idempotency remain unverified.
+
+### 2026-11-17 — Form 990 downloader improvements
+
+- Partial coverage for DAT-006, DAT-007, and DAT-011.
+- `./.venv/Scripts/python.exe -B -m unittest discover -s tests -p test_data_extract.py -v`
+  passed 20 tests, including five new Form 990 cases. Mocked HTTP covers
+  invalid plans and collisions, duplicate requests, distinct year paths,
+  index and ZIP validation, preservation of prior files, and partial-run
+  manifest metadata.
+- Live source compatibility, filing validation, and importer idempotency
+  remain unverified. This evidence is for the downloader only.
+
+### 2026-11-15 — approved local IRS downloader slice
+
+- Test path: `tests/test_data_extract.py` (15 tests).
+- Requirements: partial DAT-001, DAT-006, DAT-007, DAT-011; supports ARC-004/005/009.
+- Input: in-memory synthetic CSV bytes; mocked HTTP and retry waits. No live
+  source downloads or Supabase access.
+- Expected: correct per-state URL/file selection, all-input validation before
+  HTTP, returned URL/path/UTC time/byte count/hash, bounded retries, no partial
+  publication, preserved existing files on failure, explicit partial-batch errors.
+- Actual: **PASS — 15/15**; additionally **PASS — 8/8** existing API/IRS contract
+  tests. Formatting: **PASS**, both changed Python files unchanged by Black check.
+- Environment: existing repository `.venv`, Windows; interpreter access required
+  sandbox escalation. No dependency installation or environment repair.
+- Commands executed from repository root:
+
+  ```powershell
+  ./.venv/Scripts/python.exe -m unittest discover -s tests -p test_data_extract.py -v
+  ./.venv/Scripts/python.exe -m unittest discover -s services/api/tests -v
+  ./.venv/Scripts/python.exe -m black --check scripts/data_extract.py tests/test_data_extract.py
+  git diff --check
+  ```
+
+- Limits: no live compatibility/schema test, persistent import log, source-version
+  verification, parser, database idempotency, geographic filtering, or Supabase
+  loader. Existing M01 matrix rows remain NOT RUN for their complete requirements;
+  this narrow task does not pass either milestone gate.
+
 - Test ID or path:
 - Requirement ID(s):
 - Input fixtures/source reference:

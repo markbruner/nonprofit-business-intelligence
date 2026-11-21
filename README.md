@@ -29,6 +29,14 @@ docs/tasks/M01-data-foundation.md First bounded task brief
 docs/reference/original-product-spec-v1.md  Archived interview synthesis
 ```
 
+## Initiate the virtual environment
+1. Run ```py -3.12 -m venv .venv``` (or whatever is the stable version)
+2. Ensure it is listed on the .gitignore file.
+3. Run the below command to initiate the environment replacing your location:
+```
+(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; (& <insert your path>\.venv\Scripts\Activate.ps1)
+```
+
 ## Change discipline
 
 - Domain requirements in `docs/requirements/` are authoritative; the original spec under `reference/` is **historical context**, not a competing source of truth.

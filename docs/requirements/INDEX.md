@@ -37,4 +37,15 @@
 
 ## Stop/go gates and outstanding choices
 
+2026-11-15: The approved M01 local-downloader slice has offline test evidence
+for portions of DAT-001, DAT-006, DAT-007, and DAT-011. See
+`../delivery/TEST-MATRIX.md` and `../../scripts/README.md`. This does not complete
+the ingestion requirements or approve real data collection or the M01 gate.
+
+2026-11-17: Offline Form 990 batch planning, artifact checks, and run manifests
+add partial evidence for DAT-006, DAT-007, and DAT-011. See the test matrix.
+
+2026-11-17: Local Form 990 XML staging adds synthetic evidence for portions
+of DAT-003, DAT-005, DAT-007, DAT-008, and DAT-011. See the test matrix.
+
 See [MILESTONES](../delivery/MILESTONES.md), [DECISIONS](../delivery/DECISIONS.md), and [TEST-MATRIX](../delivery/TEST-MATRIX.md). Must resolve county boundaries and financial/source-field coverage before a real M01 geographic extraction; must approve access before partner provisioning and any production deployment.
